@@ -17,24 +17,17 @@ class NormalNoteWindow(QWidget):
         self.setGeometry(self._model.pos_x, self._model.pos_y, self._model.width, self._model.height)
 
         self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(15, 15, 15, 18)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         from widgets.note_content import NoteContentWidget
         self._content_widget = NoteContentWidget(self, self._model, self._note_manager)
-
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(16)
-        shadow.setOffset(0, 3)
-        shadow.setColor(QColor(0, 0, 0, 50))
-        self._content_widget.setGraphicsEffect(shadow)
-
         self._layout.addWidget(self._content_widget)
 
     def showEvent(self, event):
         super().showEvent(event)
         if hasattr(self, '_content_widget') and self._content_widget.resize_handle:
             rh = self._content_widget.resize_handle
-            rh.move(self.width() - rh.width() - 15, self.height() - rh.height() - 18)
+            rh.move(self.width() - rh.width() - 2, self.height() - rh.height() - 2)
             rh.raise_()
 
     def changeEvent(self, event):
@@ -53,7 +46,7 @@ class NormalNoteWindow(QWidget):
         super().resizeEvent(event)
         if hasattr(self, '_content_widget') and self._content_widget.resize_handle:
             rh = self._content_widget.resize_handle
-            rh.move(self.width() - rh.width() - 15, self.height() - rh.height() - 18)
+            rh.move(self.width() - rh.width() - 2, self.height() - rh.height() - 2)
             rh.raise_()
         self._model.width = event.size().width()
         self._model.height = event.size().height()

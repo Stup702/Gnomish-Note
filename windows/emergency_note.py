@@ -21,17 +21,10 @@ class EmergencyNoteWindow(QWidget):
         self.setGeometry(self._model.pos_x, self._model.pos_y, self._model.width, self._model.height)
 
         self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(20, 20, 20, 24)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         from widgets.note_content import NoteContentWidget
         self._content_widget = NoteContentWidget(self, self._model, self._note_manager)
-
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(20)
-        shadow.setOffset(0, 4)
-        shadow.setColor(QColor(0, 0, 0, 60))
-        self._content_widget.setGraphicsEffect(shadow)
-
         self._layout.addWidget(self._content_widget)
 
     def showEvent(self, event):
@@ -39,10 +32,9 @@ class EmergencyNoteWindow(QWidget):
         super().showEvent(event)
         if hasattr(self, '_content_widget') and self._content_widget.resize_handle:
             rh = self._content_widget.resize_handle
-            rh.move(self.width() - rh.width() - 20, self.height() - rh.height() - 24)
+            rh.move(self.width() - rh.width() - 2, self.height() - rh.height() - 2)
             rh.raise_()
         self._restoring = False
-
 
     def moveEvent(self, event):
         super().moveEvent(event)
@@ -56,7 +48,7 @@ class EmergencyNoteWindow(QWidget):
         super().resizeEvent(event)
         if hasattr(self, '_content_widget') and self._content_widget.resize_handle:
             rh = self._content_widget.resize_handle
-            rh.move(self.width() - rh.width() - 20, self.height() - rh.height() - 24)
+            rh.move(self.width() - rh.width() - 2, self.height() - rh.height() - 2)
             rh.raise_()
         if self._restoring:
             return

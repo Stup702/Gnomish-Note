@@ -14,16 +14,12 @@ class TopBar(QWidget):
         layout.setSpacing(5)
 
         self.badge = QLabel()
-        font = self.badge.font()
-        font.setBold(True)
-        self.badge.setFont(font)
-
         if self._model.note_type == "emergency":
             self.badge.setText("⚠ EMERGENCY")
-            self.badge.setStyleSheet("color: #e74c3c;")
+            self.badge.setStyleSheet("color: #d9534f; font-weight: bold; font-size: 11px;")
         else:
-            self.badge.setText("📌 NOTE")
-            self.badge.setStyleSheet("color: #2ecc71;")
+            self.badge.setText("● NOTE")
+            self.badge.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 11px;")
 
         layout.addWidget(self.badge)
         layout.addStretch()
