@@ -230,6 +230,42 @@ def install_and_enable_extension(parent_widget=None):
     )
 
 
+def uninstall_extension(parent_widget=None):
+    home = os.path.expanduser("~")
+    ext_dir = os.path.join(home, ".local", "share", "gnome-shell", "extensions", EXTENSION_UUID)
+
+    if not is_extension_installed():
+        if parent_widget:
+            QMessageBox.information(parent_widget, "Not Installed", "The extension is not currently installed.")
+        return
+
+    reply = QMessageBox.question(
+        parent_widget,
+        "Uninstall Integration Extension?",
+        "Are you sure you want to remove the Alt-Tab integration GNOME extension?",
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        QMessageBox.StandardButton.No
+    )
+
+    if reply != QMessageBox.StandardButton.Yes:
+        return
+
+    try:
+        subprocess.run(["gnome-extensions", "disable", EXTENSION_UUID], capture_output=True, text=True)
+    except Exception:
+        pass
+
+    import shutil
+    if os.path.exists(ext_dir):
+        shutil.rmtree(ext_dir, ignore_errors=True)
+
+    QMessageBox.information(
+        parent_widget,
+        "Extension Removed",
+        "The Alt-Tab integration extension has been uninstalled.\n\nPlease log out and log back in for GNOME Shell to completely unload it."
+    )
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     install_and_enable_extension()
