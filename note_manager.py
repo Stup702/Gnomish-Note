@@ -51,7 +51,18 @@ class NoteManager(QObject):
                 window.hide()
 
     def create_note(self, note_type: str) -> NoteModel:
-        model = NoteModel(note_type=note_type)
+        from persistence import settings_manager
+        defaults = settings_manager.get_default_settings()
+        
+        model = NoteModel(
+            note_type=note_type,
+            font_family=defaults.get("font_family", "Sans Serif"),
+            font_size=defaults.get("font_size", 11),
+            color=defaults.get("color", "#fdf5c9"),
+            font_color=defaults.get("font_color", "#333333"),
+            width=defaults.get("width", 280),
+            height=defaults.get("height", 320)
+        )
         self._notes[model.id] = model
         self._create_window_for_model(model)
         self.note_created.emit(model)
