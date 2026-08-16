@@ -20,6 +20,7 @@ class NoteModel:
     width: int = 280
     height: int = 320
     minimized: bool = False
+    collapsed: bool = False
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
     def to_dict(self) -> dict:
@@ -41,5 +42,6 @@ class NoteModel:
             width=d.get("width", 280),
             height=d.get("height", 320),
             minimized=d.get("minimized", False),
+            collapsed=d.get("collapsed", False),
             created_at=d.get("created_at", datetime.now().isoformat())
         )

@@ -101,5 +101,45 @@ class TestUIComponents(unittest.TestCase):
         pop.eventFilter(qwin, click_ev)
         self.assertFalse(pop.isVisible())
 
+    def test_checklist_toggle_and_click(self):
+        m = NoteModel(note_type=NOTE_TYPE_NORMAL)
+        win = NormalNoteWindow(m, self.nm)
+        te = win._content_widget.text_edit
+        te.setPlainText("Buy Milk\nCall Alex")
+        
+        # Move cursor to first line and toggle checklist
+        cursor = te.textCursor()
+        cursor.setPosition(2)
+        te.setTextCursor(cursor)
+        te.toggle_checklist()
+        
+        self.assertTrue(te.toPlainText().startswith("☐ Buy Milk"))
+        
+        # Untoggle
+        te.toggle_checklist()
+        self.assertTrue(te.toPlainText().startswith("Buy Milk"))
+        win.close()
+
+    def test_normal_note_collapsible_mini_mode(self):
+        m = NoteModel(note_type=NOTE_TYPE_NORMAL, width=280, height=320)
+        win = NormalNoteWindow(m, self.nm)
+        win.show()
+        
+        self.assertFalse(m.collapsed)
+        self.assertTrue(win._content_widget.text_edit.isVisible())
+        
+        # Collapse
+        win.toggle_collapsed()
+        self.assertTrue(m.collapsed)
+        self.assertFalse(win._content_widget.text_edit.isVisible())
+        self.assertLess(win.height(), 60)
+        
+        # Expand
+        win.toggle_collapsed()
+        self.assertFalse(m.collapsed)
+        self.assertTrue(win._content_widget.text_edit.isVisible())
+        self.assertEqual(win.height(), 320)
+        win.close()
+
 if __name__ == "__main__":
     unittest.main()
