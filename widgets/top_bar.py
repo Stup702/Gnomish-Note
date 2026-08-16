@@ -49,7 +49,11 @@ class TopBar(QWidget):
                 self._settings_popover.raise_()
 
     def _close_window(self):
-        self.window().close()
+        win = self.window()
+        if hasattr(win, '_model') and win._model:
+            win._model.minimized = True
+            self._nm.update_note(win._model)
+        win.hide()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
