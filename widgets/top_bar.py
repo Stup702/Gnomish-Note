@@ -1,0 +1,72 @@
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton
+from PyQt6.QtCore import Qt
+
+class TopBar(QWidget):
+    def __init__(self, model, note_manager, settings_popover):
+        super().__init__()
+        self._model = model
+        self._nm = note_manager
+        self._settings_popover = settings_popover
+        self._drag_pos = None
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(5)
+
+        self.badge = QLabel()
+        font = self.badge.font()
+        font.setBold(True)
+        self.badge.setFont(font)
+
+        if self._model.note_type == "emergency":
+            self.badge.setText("⚠ EMERGENCY")
+            self.badge.setStyleSheet("color: #e74c3c;")
+        else:
+            self.badge.setText("📌 NOTE")
+            self.badge.setStyleSheet("color: #2ecc71;")
+
+        layout.addWidget(self.badge)
+        layout.addStretch()
+
+        self.btn_settings = QPushButton("⚙")
+        self.btn_settings.setFixedSize(24, 24)
+        self.btn_settings.clicked.connect(self._toggle_settings)
+        layout.addWidget(self.btn_settings)
+
+        # Emergency notes cannot be closed/deleted from the note itself.
+        # Normal notes have a single close button here.
+        if self._model.note_type != "emergency":
+            self.btn_close = QPushButton("✕")
+            self.btn_close.setFixedSize(24, 24)
+            self.btn_close.clicked.connect(self._close_window)
+            layout.addWidget(self.btn_close)
+        else:
+            self.btn_close = None
+
+        # Make the top bar a drag target with a hand cursor
+        self.setCursor(Qt.CursorShape.SizeAllCursor)
+
+    def _toggle_settings(self):
+        if self._settings_popover:
+            self._settings_popover.setVisible(not self._settings_popover.isVisible())
+            if self._settings_popover.isVisible():
+                self._settings_popover.raise_()
+
+    def _close_window(self):
+        self.window().close()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._drag_pos = event.globalPosition().toPoint() - self.window().pos()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.MouseButton.LeftButton and hasattr(self, '_drag_pos') and self._drag_pos is not None:
+            self.window().move(event.globalPosition().toPoint() - self._drag_pos)
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        self._drag_pos = None
+        self.window().activateWindow()
+        self.window().raise_()
+        event.accept()
