@@ -1,0 +1,88 @@
+from PyQt6.QtCore import QObject, pyqtSignal, QTimer
+from models.note_model import NoteModel, NOTE_TYPE_EMERGENCY, NOTE_TYPE_NORMAL
+from persistence import storage
+from windows.emergency_note import EmergencyNoteWindow
+from windows.normal_note import NormalNoteWindow
+
+class NoteManager(QObject):
+    note_created = pyqtSignal(object)   # NoteModel instance
+    note_deleted = pyqtSignal(str)      # note id
+    note_updated = pyqtSignal(object)   # NoteModel instance
+
+    def __init__(self):
+        super().__init__()
+        self._notes: dict[str, NoteModel] = {}
+        self._windows = {}
+        
+        self._save_timer = QTimer()
+        self._save_timer.setSingleShot(True)
+        self._save_timer.timeout.connect(self._do_save)
+
+    def load_all(self):
+        from PyQt6.QtWidgets import QApplication
+        from PyQt6.QtCore import QPoint
+        screen_geom = QApplication.primaryScreen().availableGeometry()
+        
+        loaded_notes = storage.load_notes()
+        for note in loaded_notes:
+            if not screen_geom.contains(QPoint(note.pos_x, note.pos_y)):
+                note.pos_x, note.pos_y = 100, 100
+                
+            self._notes[note.id] = note
+            self._create_window_for_model(note)
+            self.note_created.emit(note)
+
+    def _create_window_for_model(self, model: NoteModel):
+        if model.note_type == NOTE_TYPE_EMERGENCY:
+            window = EmergencyNoteWindow(model=model, note_manager=self)
+            self._windows[model.id] = window
+            window.show()
+        elif model.note_type == NOTE_TYPE_NORMAL:
+            window = NormalNoteWindow(model=model, note_manager=self)
+            self._windows[model.id] = window
+            if model.minimized:
+                window.showMinimized()
+            else:
+                window.show()
+
+    def create_note(self, note_type: str) -> NoteModel:
+        model = NoteModel(note_type=note_type)
+        self._notes[model.id] = model
+        self._create_window_for_model(model)
+        self.note_created.emit(model)
+        self.update_note(model)
+        return model
+
+    def delete_note(self, note_id: str):
+        if note_id in self._windows:
+            window = self._windows.pop(note_id)
+            window.deleteLater()
+        
+        if note_id in self._notes:
+            del self._notes[note_id]
+            
+        self.note_deleted.emit(note_id)
+        self._do_save()
+
+    def get_note(self, note_id: str) -> NoteModel | None:
+        return self._notes.get(note_id)
+
+    def update_note(self, model: NoteModel):
+        self._notes[model.id] = model
+        self.note_updated.emit(model)
+        self._save_timer.start(500)
+
+    def show_all(self):
+        for window in self._windows.values():
+            if window.isMinimized():
+                window.showNormal()
+            window.show()
+            window.raise_()
+            window.activateWindow()
+
+    def hide_all(self):
+        for window in self._windows.values():
+            window.hide()
+
+    def _do_save(self):
+        storage.save_notes(list(self._notes.values()))
