@@ -8,6 +8,7 @@ NOTE_TYPE_NORMAL = "normal"
 @dataclass
 class NoteModel:
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    title: str = ""
     note_type: str = NOTE_TYPE_NORMAL
     content_html: str = ""
     color: str = "#fdf5c9"
@@ -28,6 +29,7 @@ class NoteModel:
     def from_dict(cls, d: dict) -> 'NoteModel':
         return cls(
             id=d.get("id", str(uuid.uuid4())),
+            title=d.get("title", ""),
             note_type=d.get("note_type", NOTE_TYPE_NORMAL),
             content_html=d.get("content_html", ""),
             color=d.get("color", "#fdf5c9"),

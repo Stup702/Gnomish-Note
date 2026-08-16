@@ -5,6 +5,7 @@ class TestNoteModel(unittest.TestCase):
     def test_default_values(self):
         m = NoteModel()
         self.assertIsNotNone(m.id)
+        self.assertEqual(m.title, "")
         self.assertEqual(m.note_type, NOTE_TYPE_NORMAL)
         self.assertEqual(m.content_html, "")
         self.assertEqual(m.color, "#fdf5c9")
@@ -22,6 +23,7 @@ class TestNoteModel(unittest.TestCase):
     def test_serialization_roundtrip(self):
         m1 = NoteModel(
             id="test-123",
+            title="Meeting Notes",
             note_type=NOTE_TYPE_EMERGENCY,
             content_html="<p>Important Task</p>",
             color="#ffcdd2",
@@ -38,6 +40,7 @@ class TestNoteModel(unittest.TestCase):
         m2 = NoteModel.from_dict(d)
         
         self.assertEqual(m1.id, m2.id)
+        self.assertEqual(m1.title, m2.title)
         self.assertEqual(m1.note_type, m2.note_type)
         self.assertEqual(m1.content_html, m2.content_html)
         self.assertEqual(m1.color, m2.color)

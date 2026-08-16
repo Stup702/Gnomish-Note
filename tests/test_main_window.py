@@ -36,6 +36,16 @@ class TestMainWindow(unittest.TestCase):
         self.nm.delete_note(note.id)
         self.assertEqual(self.mw.list_widget.count(), 0)
 
+    def test_custom_title_display(self):
+        note = self.nm.create_note(NOTE_TYPE_NORMAL)
+        note.title = "Grocery List"
+        note.content_html = "<p>Milk, Eggs, Bread</p>"
+        self.nm.update_note(note)
+        
+        item = self.mw.list_widget.item(0)
+        widget = self.mw.list_widget.itemWidget(item)
+        self.assertIn("Grocery List", widget.preview_label.text())
+
     def test_extension_code_structure(self):
         ext_js = extension_installer.EXTENSION_JS_CODE
         # Verify that Alt-Tab filtering handles [Note] prefix and switcher classes

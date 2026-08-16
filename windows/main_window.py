@@ -16,7 +16,7 @@ class NoteListItem(QWidget):
         
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(8)
+        layout.setSpacing(6)
         
         # Type icon/label badge
         self.type_label = QLabel()
@@ -28,23 +28,56 @@ class NoteListItem(QWidget):
             self.type_label.setStyleSheet("color: #3498db; font-weight: bold; font-size: 14px;")
         layout.addWidget(self.type_label)
         
-        # Content preview extracted properly from HTML
-        content = getattr(self._model, "content_html", "")
-        clean_text = QTextDocumentFragment.fromHtml(content).toPlainText().strip()
-        preview = clean_text[:40].replace('\n', ' ') if clean_text else "Empty Note"
-        
-        self.preview_label = QLabel(preview)
+        self.preview_label = QLabel()
         layout.addWidget(self.preview_label, stretch=1)
+        self._update_text()
         
+        # Rename button
+        rename_btn = QPushButton("✏")
+        rename_btn.setToolTip("Rename Note")
+        rename_btn.setFixedSize(28, 28)
+        rename_btn.clicked.connect(self._on_rename)
+        layout.addWidget(rename_btn)
+
         # Delete button
         del_btn = QPushButton("🗑")
+        del_btn.setToolTip("Delete Note")
         del_btn.setFixedSize(28, 28)
         del_btn.clicked.connect(self._on_delete)
         layout.addWidget(del_btn)
         
+    def _on_rename(self):
+        from PyQt6.QtWidgets import QInputDialog
+        current_title = getattr(self._model, "title", "")
+        new_title, ok = QInputDialog.getText(
+            self.window(),
+            "Rename Note",
+            "Enter name for this note:",
+            text=current_title
+        )
+        if ok:
+            self._model.title = new_title.strip()
+            self._note_manager.update_note(self._model)
+            self.update_model(self._model)
+
     def _on_delete(self):
         self._note_manager.delete_note(self._model.id)
         
+    def _update_text(self):
+        title = getattr(self._model, "title", "").strip()
+        content = getattr(self._model, "content_html", "")
+        clean_text = QTextDocumentFragment.fromHtml(content).toPlainText().strip()
+        preview = clean_text[:35].replace('\n', ' ') if clean_text else ""
+        
+        if title and preview:
+            self.preview_label.setText(f"<b>{title}</b> — <span style='color: #888;'>{preview}</span>")
+        elif title:
+            self.preview_label.setText(f"<b>{title}</b>")
+        elif preview:
+            self.preview_label.setText(preview)
+        else:
+            self.preview_label.setText("Empty Note")
+
     def update_model(self, model):
         self._model = model
         if model.note_type == "emergency":
@@ -54,10 +87,7 @@ class NoteListItem(QWidget):
             self.type_label.setText("📌")
             self.type_label.setStyleSheet("color: #3498db; font-weight: bold; font-size: 14px;")
             
-        content = getattr(model, "content_html", "")
-        clean_text = QTextDocumentFragment.fromHtml(content).toPlainText().strip()
-        preview = clean_text[:40].replace('\n', ' ') if clean_text else "Empty Note"
-        self.preview_label.setText(preview)
+        self._update_text()
 
 class MainWindow(QMainWindow):
     def __init__(self, note_manager):
