@@ -15,7 +15,6 @@ class EmergencyNoteWindow(QWidget):
             Qt.WindowType.WindowStaysOnTopHint |
             Qt.WindowType.ToolTip
         )
-        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setMinimumSize(200, 150)
         self.setGeometry(self._model.pos_x, self._model.pos_y, self._model.width, self._model.height)
