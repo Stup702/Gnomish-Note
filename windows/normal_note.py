@@ -7,6 +7,7 @@ class NormalNoteWindow(QWidget):
         super().__init__()
         self._model = model
         self._note_manager = note_manager
+        self._restoring = False
 
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint |
@@ -24,11 +25,15 @@ class NormalNoteWindow(QWidget):
         self._layout.addWidget(self._content_widget)
 
     def showEvent(self, event):
+        self._restoring = True
         super().showEvent(event)
+        self.move(self._model.pos_x, self._model.pos_y)
+        self.resize(self._model.width, self._model.height)
         if hasattr(self, '_content_widget') and self._content_widget.resize_handle:
             rh = self._content_widget.resize_handle
             rh.move(self.width() - rh.width() - 2, self.height() - rh.height() - 2)
             rh.raise_()
+        self._restoring = False
 
     def changeEvent(self, event):
         super().changeEvent(event)
@@ -38,6 +43,8 @@ class NormalNoteWindow(QWidget):
 
     def moveEvent(self, event):
         super().moveEvent(event)
+        if getattr(self, '_restoring', False):
+            return
         self._model.pos_x = self.pos().x()
         self._model.pos_y = self.pos().y()
         self._note_manager.update_note(self._model)
@@ -48,6 +55,8 @@ class NormalNoteWindow(QWidget):
             rh = self._content_widget.resize_handle
             rh.move(self.width() - rh.width() - 2, self.height() - rh.height() - 2)
             rh.raise_()
+        if getattr(self, '_restoring', False):
+            return
         self._model.width = event.size().width()
         self._model.height = event.size().height()
         self._note_manager.update_note(self._model)
