@@ -11,20 +11,20 @@ class DefaultSettingsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Default Note Settings")
-        self.setFixedSize(340, 320)
+        self.setFixedSize(360, 360)
         
         self._current_settings = settings_manager.get_default_settings()
         self._selected_color = self._current_settings["color"]
         self._selected_font_color = self._current_settings["font_color"]
 
         layout = QVBoxLayout(self)
-        layout.setSpacing(12)
+        layout.setSpacing(10)
         layout.setContentsMargins(16, 16, 16, 16)
 
         # Header description
-        desc = QLabel("Configure the default style for all newly created notes:")
+        desc = QLabel("Configure global default styles and system integrations:")
         desc.setWordWrap(True)
-        desc.setStyleSheet("color: #666; font-size: 11px;")
+        desc.setStyleSheet("color: #888; font-size: 11px;")
         layout.addWidget(desc)
 
         # 1. Font Family
@@ -81,6 +81,16 @@ class DefaultSettingsDialog(QDialog):
         self.height_spin.setValue(self._current_settings["height"])
         dim_layout.addWidget(self.height_spin)
         layout.addLayout(dim_layout)
+
+        # 6. GNOME Shell Integration Extension
+        ext_layout = QHBoxLayout()
+        ext_layout.addWidget(QLabel("Alt-Tab Extension:"))
+        self.btn_ext = QPushButton()
+        self.btn_ext.setFixedHeight(26)
+        self._update_extension_btn()
+        self.btn_ext.clicked.connect(self._on_extension_btn_clicked)
+        ext_layout.addWidget(self.btn_ext, stretch=1)
+        layout.addLayout(ext_layout)
 
         layout.addStretch()
 
@@ -139,6 +149,22 @@ class DefaultSettingsDialog(QDialog):
         self._update_font_color_btn(self._current_settings["font_color"])
         self.width_spin.setValue(self._current_settings["width"])
         self.height_spin.setValue(self._current_settings["height"])
+
+    def _update_extension_btn(self):
+        import extension_installer
+        if extension_installer.is_extension_installed():
+            self.btn_ext.setText("✔ Installed (Reinstall)")
+            self.btn_ext.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 11px;")
+        else:
+            self.btn_ext.setText("⚡ Install Extension")
+            self.btn_ext.setStyleSheet("color: #d08770; font-weight: bold; font-size: 11px;")
+
+    def _on_extension_btn_clicked(self):
+        import extension_installer
+        extension_installer.install_and_enable_extension(self)
+        self._update_extension_btn()
+        if self.parent() and hasattr(self.parent(), '_dismiss_banner') and extension_installer.is_extension_installed():
+            self.parent()._dismiss_banner()
 
     def _on_save(self):
         settings_manager.save_default_settings({
