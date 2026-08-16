@@ -9,8 +9,8 @@ class NormalNoteWindow(QWidget):
         self._note_manager = note_manager
 
         self.setWindowFlags(
-            Qt.WindowType.Window |
-            Qt.WindowType.FramelessWindowHint
+            Qt.WindowType.FramelessWindowHint |
+            Qt.WindowType.Tool
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setMinimumSize(200, 150)

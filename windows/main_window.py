@@ -163,4 +163,7 @@ class MainWindow(QMainWindow):
             
     def closeEvent(self, event):
         from PyQt6.QtWidgets import QApplication
+        self._note_manager.close_all_windows()
+        event.accept()
+        QApplication.instance().closeAllWindows()
         QApplication.instance().quit()

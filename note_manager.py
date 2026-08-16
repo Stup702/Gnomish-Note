@@ -73,16 +73,31 @@ class NoteManager(QObject):
         self._save_timer.start(500)
 
     def show_all(self):
-        for window in self._windows.values():
-            if window.isMinimized():
-                window.showNormal()
-            window.show()
-            window.raise_()
-            window.activateWindow()
+        for model in self._notes.values():
+            model.minimized = False
+            self.update_note(model)
+            window = self._windows.get(model.id)
+            if window:
+                window.show()
+                window.raise_()
 
     def hide_all(self):
-        for window in self._windows.values():
-            window.hide()
+        for model in self._notes.values():
+            model.minimized = True
+            self.update_note(model)
+            window = self._windows.get(model.id)
+            if window:
+                window.hide()
+
+    def close_all_windows(self):
+        for window in list(self._windows.values()):
+            try:
+                window.hide()
+                window.close()
+            except Exception:
+                pass
+        self._windows.clear()
+        self._do_save()
 
     def _do_save(self):
         storage.save_notes(list(self._notes.values()))
