@@ -162,5 +162,5 @@ class MainWindow(QMainWindow):
             window.activateWindow()
             
     def closeEvent(self, event):
-        event.ignore()
-        self.hide()
+        from PyQt6.QtWidgets import QApplication
+        QApplication.instance().quit()

@@ -17,8 +17,27 @@ from tray.system_tray import SystemTrayIcon
 import persistence.storage as storage
 import extension_installer
 
+import atexit
+
 LOCK_FILE = os.path.expanduser("~/.local/share/gnome_linux_note_app/app.lock")
 LOCK_FD = None
+
+def cleanup():
+    global LOCK_FD
+    if LOCK_FD:
+        try:
+            fcntl.flock(LOCK_FD, fcntl.LOCK_UN)
+            LOCK_FD.close()
+            LOCK_FD = None
+        except Exception:
+            pass
+    try:
+        if os.path.exists(LOCK_FILE):
+            os.remove(LOCK_FILE)
+    except Exception:
+        pass
+
+atexit.register(cleanup)
 
 def acquire_lock():
     global LOCK_FD
@@ -40,7 +59,7 @@ def main():
     app = QApplication(sys.argv)
     app.setApplicationName("gnome-sticky-notes")
     app.setDesktopFileName("gnome-sticky-notes")
-    app.setQuitOnLastWindowClosed(False)
+    app.aboutToQuit.connect(cleanup)
 
     note_manager = NoteManager()
     main_window = MainWindow(note_manager)
