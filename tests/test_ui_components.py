@@ -136,6 +136,11 @@ class TestUIComponents(unittest.TestCase):
         self.assertTrue(win._content_widget.top_bar.collapsed_title_label.isVisible())
         self.assertEqual(win._content_widget.top_bar.collapsed_title_label.text(), "Project Specs")
         self.assertLess(win.height(), 60)
+
+        # Rename note while rolled up (e.g. from Master Window)
+        m.title = "Updated Project Roadmap"
+        self.nm.update_note(m)
+        self.assertEqual(win._content_widget.top_bar.collapsed_title_label.text(), "Updated Project Roadmap")
         
         # Expand
         win.toggle_collapsed()
