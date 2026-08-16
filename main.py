@@ -2,6 +2,12 @@
 import sys
 import os
 import fcntl
+import signal
+import atexit
+
+# Allow Ctrl+C (SIGINT) to terminate the app immediately from terminal
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
 # Force XCB (XWayland) platform so WindowStaysOnTopHint and ToolTip stickiness work natively on GNOME
 # (Matches setup_systemd.sh in Personal_Permanent_Sticky_Timer)
