@@ -29,6 +29,8 @@ class NormalNoteWindow(QWidget):
             # Expand
             self._model.collapsed = False
             self._content_widget.text_edit.show()
+            if hasattr(self._content_widget, 'top_bar'):
+                self._content_widget.top_bar.set_collapsed_mode(False)
             if hasattr(self._content_widget, 'resize_handle') and self._content_widget.resize_handle:
                 self._content_widget.resize_handle.show()
             saved_h = getattr(self, '_saved_height', max(150, self._model.height))
@@ -41,6 +43,8 @@ class NormalNoteWindow(QWidget):
             self._saved_height = self.height()
             self._model.collapsed = True
             self._content_widget.text_edit.hide()
+            if hasattr(self._content_widget, 'top_bar'):
+                self._content_widget.top_bar.set_collapsed_mode(True)
             if hasattr(self._content_widget, 'resize_handle') and self._content_widget.resize_handle:
                 self._content_widget.resize_handle.hide()
             min_h = self._content_widget.top_bar.sizeHint().height() + 8
@@ -54,12 +58,16 @@ class NormalNoteWindow(QWidget):
         self.move(self._model.pos_x, self._model.pos_y)
         if self._model.collapsed:
             self._content_widget.text_edit.hide()
+            if hasattr(self._content_widget, 'top_bar'):
+                self._content_widget.top_bar.set_collapsed_mode(True)
             if hasattr(self._content_widget, 'resize_handle') and self._content_widget.resize_handle:
                 self._content_widget.resize_handle.hide()
             min_h = self._content_widget.top_bar.sizeHint().height() + 8
             self.setMinimumSize(200, min_h)
             self.resize(self._model.width, min_h)
         else:
+            if hasattr(self._content_widget, 'top_bar'):
+                self._content_widget.top_bar.set_collapsed_mode(False)
             self.resize(self._model.width, self._model.height)
             if hasattr(self, '_content_widget') and self._content_widget.resize_handle:
                 rh = self._content_widget.resize_handle
