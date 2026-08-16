@@ -15,8 +15,8 @@ class TopBar(QWidget):
 
         self.badge = QLabel()
         if self._model.note_type == "emergency":
-            self.badge.setText("⚠ EMERGENCY")
-            self.badge.setStyleSheet("color: #d9534f; font-weight: bold; font-size: 11px;")
+            self.badge.setText("● STICKY")
+            self.badge.setStyleSheet("color: #e67e22; font-weight: bold; font-size: 11px;")
         else:
             self.badge.setText("● NOTE")
             self.badge.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 11px;")
