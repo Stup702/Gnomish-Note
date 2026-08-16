@@ -45,7 +45,28 @@ class NoteListItem(QWidget):
         del_btn.setFixedSize(28, 28)
         del_btn.clicked.connect(self._on_delete)
         layout.addWidget(del_btn)
-        
+
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._open_note()
+        super().mousePressEvent(event)
+
+    def _open_note(self):
+        window = self._note_manager._windows.get(self._model.id)
+        if not window:
+            self._note_manager._create_window_for_model(self._model)
+            window = self._note_manager._windows.get(self._model.id)
+        if window:
+            self._model.minimized = False
+            self._note_manager.update_note(self._model)
+            if hasattr(window, 'isMinimized') and window.isMinimized():
+                window.showNormal()
+            window.show()
+            window.raise_()
+            window.activateWindow()
+
     def _on_rename(self):
         from PyQt6.QtWidgets import QInputDialog
         current_title = getattr(self._model, "title", "")
@@ -188,7 +209,14 @@ class MainWindow(QMainWindow):
                 
     def _on_item_clicked(self, item):
         note_id = item.data(Qt.ItemDataRole.UserRole)
+        model = self._note_manager.get_note(note_id)
+        if model:
+            model.minimized = False
+            self._note_manager.update_note(model)
         window = self._note_manager._windows.get(note_id)
+        if not window and model:
+            self._note_manager._create_window_for_model(model)
+            window = self._note_manager._windows.get(note_id)
         if window:
             if hasattr(window, 'isMinimized') and window.isMinimized():
                 window.showNormal()
