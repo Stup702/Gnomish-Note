@@ -195,17 +195,34 @@ class SettingsPopover(QFrame):
         if event.type() == QEvent.Type.MouseButtonPress:
             if self._color_dialog_active:
                 return False
-            # Check if clicked inside this popover or any of its child widgets
-            if watched == self or self.isAncestorOf(watched):
+
+            # Check if watched is this popover or a child widget
+            if watched == self or (isinstance(watched, QWidget) and self.isAncestorOf(watched)):
                 return False
+
             # Check if clicked on a combobox dropdown view belonging to font_combo
-            if hasattr(self, 'font_combo') and (watched == self.font_combo.view() or watched == self.font_combo.view().window()):
-                return False
+            if hasattr(self, 'font_combo'):
+                try:
+                    view = self.font_combo.view()
+                    if view and (watched == view or watched == view.window()):
+                        return False
+                except Exception:
+                    pass
+
             # Check if clicked on the settings button of this note (handled by its own click toggle)
             if (hasattr(self, '_note_content_widget') and
                 hasattr(self._note_content_widget, 'top_bar') and
                 watched == self._note_content_widget.top_bar.btn_settings):
                 return False
+
+            # Check if global click coordinate falls inside the popover rect
+            if hasattr(event, 'globalPosition'):
+                try:
+                    global_pos = event.globalPosition().toPoint()
+                    if self.rect().contains(self.mapFromGlobal(global_pos)):
+                        return False
+                except Exception:
+                    pass
 
             self.hide()
             return False
