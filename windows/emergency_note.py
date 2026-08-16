@@ -11,9 +11,9 @@ class EmergencyNoteWindow(QWidget):
         self._drag_pos = None
 
         self.setWindowFlags(
+            Qt.WindowType.Window |
             Qt.WindowType.FramelessWindowHint |
-            Qt.WindowType.WindowStaysOnTopHint |
-            Qt.WindowType.ToolTip
+            Qt.WindowType.WindowStaysOnTopHint
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setMinimumSize(200, 150)
@@ -25,6 +25,12 @@ class EmergencyNoteWindow(QWidget):
         from widgets.note_content import NoteContentWidget
         self._content_widget = NoteContentWidget(self, self._model, self._note_manager)
         self._layout.addWidget(self._content_widget)
+
+    def mousePressEvent(self, event):
+        if hasattr(self, '_content_widget') and hasattr(self._content_widget, 'text_edit'):
+            self._content_widget.text_edit.setFocus()
+        self.activateWindow()
+        super().mousePressEvent(event)
 
     def showEvent(self, event):
         self._restoring = True
