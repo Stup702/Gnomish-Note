@@ -423,7 +423,7 @@ class DefaultSettingsDialog(QDialog):
         self.lbl_op_val.setText(f"{op_val}%")
 
     def _update_extension_btn(self):
-        import extension_installer
+        from core import extension_installer
         if extension_installer.is_extension_installed():
             self.btn_ext.setText("✔ Installed (Reinstall)")
             self.btn_ext.setStyleSheet("color: #2ec27e; font-weight: 600; font-size: 11px;")
@@ -434,14 +434,14 @@ class DefaultSettingsDialog(QDialog):
             self.btn_ext_uninstall.hide()
 
     def _on_extension_btn_clicked(self):
-        import extension_installer
+        from core import extension_installer
         extension_installer.install_and_enable_extension(self)
         self._update_extension_btn()
         if self.parent() and hasattr(self.parent(), '_dismiss_banner') and extension_installer.is_extension_installed():
             self.parent()._dismiss_banner()
 
     def _on_extension_uninstall_clicked(self):
-        import extension_installer
+        from core import extension_installer
         extension_installer.uninstall_extension(self)
         self._update_extension_btn()
 

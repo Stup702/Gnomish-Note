@@ -5,7 +5,7 @@ from pathlib import Path
 from PyQt6.QtWidgets import QApplication
 from models.note_model import NoteModel, NOTE_TYPE_EMERGENCY, NOTE_TYPE_NORMAL
 from persistence import storage
-from note_manager import NoteManager
+from core.note_manager import NoteManager
 
 app = QApplication.instance() or QApplication(sys.argv)
 
