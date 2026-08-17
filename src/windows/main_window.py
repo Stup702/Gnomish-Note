@@ -92,7 +92,8 @@ class NoteListItem(QWidget):
                 border: none;
                 border-radius: 13px;
                 color: #888888;
-                font-size: 12px;
+                font-size: 13px;
+                font-family: "Noto Color Emoji", "DejaVu Sans", "Segoe UI Emoji", sans-serif;
             }
             QPushButton#CardActionBtn:hover {
                 background: rgba(255, 255, 255, 0.15);
@@ -106,7 +107,7 @@ class NoteListItem(QWidget):
             self.type_label.setStyleSheet("color: #e67e22; font-weight: bold; font-size: 14px; background: transparent;")
             self.type_label.setToolTip("Always-on-top Sticky Note")
             if hasattr(self, 'toggle_type_btn'):
-                self.toggle_type_btn.setText("🪟")
+                self.toggle_type_btn.setText("🗖")
                 self.toggle_type_btn.setToolTip("Convert to Standard Note")
         else:
             self.type_label.setText("●")
