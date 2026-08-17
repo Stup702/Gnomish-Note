@@ -142,10 +142,7 @@ class NoteContentWidget(QWidget):
         self._text_timer.timeout.connect(self._save_text)
         
         self.layout = QVBoxLayout(self)
-        if self._model.note_type == "emergency":
-            self.layout.setContentsMargins(0, 0, 0, 0)
-        else:
-            self.layout.setContentsMargins(2, 2, 2, 2)
+        self.layout.setContentsMargins(4, 4, 4, 4)
         self.layout.setSpacing(0)
         
         self.container = QWidget()

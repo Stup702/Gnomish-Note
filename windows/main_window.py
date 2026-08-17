@@ -177,6 +177,12 @@ class MainWindow(QMainWindow):
         self.resize(380, 520)
         self.setMinimumSize(320, 400)
         
+        import os
+        from PyQt6.QtGui import QIcon
+        icon_path = os.path.join(os.path.dirname(__file__), "..", "icons", "gnomish-note-v4.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+        
         central_widget = QWidget()
         central_widget.setObjectName("CentralWidget")
         self.setCentralWidget(central_widget)

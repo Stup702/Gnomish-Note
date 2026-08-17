@@ -9,7 +9,7 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 def run_suite():
     print("=" * 60)
-    print(" 🧙‍♂️ Gnomish Note — Automated Test Suite")
+    print(" Gnomish Note — Automated Test Suite")
     print("=" * 60)
 
     loader = unittest.TestLoader()
