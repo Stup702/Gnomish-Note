@@ -87,6 +87,12 @@ StartupWMClass=gnomish-note
     with open(desktop_file, "w") as f:
         f.write(content)
 
+    try:
+        import subprocess
+        subprocess.run(["update-desktop-database", desktop_dir], capture_output=True, check=False)
+    except Exception:
+        pass
+
 def main():
     if not acquire_lock():
         print("Application is already running. Exiting.")
