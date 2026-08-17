@@ -21,6 +21,7 @@ class NoteModel:
     height: int = 320
     minimized: bool = False
     collapsed: bool = False
+    opacity: float = 1.0
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
     def to_dict(self) -> dict:
@@ -43,5 +44,6 @@ class NoteModel:
             height=d.get("height", 320),
             minimized=d.get("minimized", False),
             collapsed=d.get("collapsed", False),
+            opacity=float(d.get("opacity", 1.0)),
             created_at=d.get("created_at", datetime.now().isoformat())
         )

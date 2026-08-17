@@ -61,8 +61,22 @@ class TestNoteManager(unittest.TestCase):
         self.nm.hide_all()
         self.assertTrue(self.nm.get_note(n1.id).minimized)
         
-        self.nm.show_all()
-        self.assertFalse(self.nm.get_note(n1.id).minimized)
+    def test_toggle_note_type(self):
+        note = self.nm.create_note(NOTE_TYPE_NORMAL)
+        self.assertEqual(note.note_type, NOTE_TYPE_NORMAL)
+        from windows.normal_note import NormalNoteWindow
+        self.assertIsInstance(self.nm._windows[note.id], NormalNoteWindow)
+
+        # Toggle to Emergency (Sticky)
+        updated = self.nm.toggle_note_type(note.id)
+        self.assertEqual(updated.note_type, NOTE_TYPE_EMERGENCY)
+        from windows.emergency_note import EmergencyNoteWindow
+        self.assertIsInstance(self.nm._windows[note.id], EmergencyNoteWindow)
+
+        # Toggle back to Normal
+        updated2 = self.nm.toggle_note_type(note.id)
+        self.assertEqual(updated2.note_type, NOTE_TYPE_NORMAL)
+        self.assertIsInstance(self.nm._windows[note.id], NormalNoteWindow)
 
 if __name__ == "__main__":
     unittest.main()

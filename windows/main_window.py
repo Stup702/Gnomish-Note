@@ -41,6 +41,15 @@ class NoteListItem(QWidget):
         
         self._update_text()
         
+        # Type toggle button (Sticky <-> Standard)
+        self.toggle_type_btn = QPushButton()
+        self.toggle_type_btn.setObjectName("CardActionBtn")
+        self.toggle_type_btn.setFixedSize(26, 26)
+        self.toggle_type_btn.clicked.connect(self._on_toggle_type)
+        main_layout.addWidget(self.toggle_type_btn)
+        
+        self._update_badge()
+
         # Rename button
         rename_btn = QPushButton("✏")
         rename_btn.setObjectName("CardActionBtn")
@@ -97,10 +106,21 @@ class NoteListItem(QWidget):
             self.type_label.setText("●")
             self.type_label.setStyleSheet("color: #e67e22; font-weight: bold; font-size: 14px; background: transparent;")
             self.type_label.setToolTip("Always-on-top Sticky Note")
+            if hasattr(self, 'toggle_type_btn'):
+                self.toggle_type_btn.setText("🪟")
+                self.toggle_type_btn.setToolTip("Convert to Standard Note")
         else:
             self.type_label.setText("●")
             self.type_label.setStyleSheet("color: #2ec27e; font-weight: bold; font-size: 14px; background: transparent;")
             self.type_label.setToolTip("Standard Note")
+            if hasattr(self, 'toggle_type_btn'):
+                self.toggle_type_btn.setText("📌")
+                self.toggle_type_btn.setToolTip("Convert to Always-on-Top Sticky Note")
+
+    def _on_toggle_type(self):
+        updated = self._note_manager.toggle_note_type(self._model.id)
+        if updated:
+            self.update_model(updated)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:

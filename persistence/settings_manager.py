@@ -9,7 +9,8 @@ DEFAULTS = {
     "color": "#fdf5c9",
     "font_color": "#333333",
     "width": 280,
-    "height": 320
+    "height": 320,
+    "opacity": 1.0
 }
 
 def get_default_settings() -> dict:
@@ -21,6 +22,7 @@ def get_default_settings() -> dict:
         "font_color": settings.value("font_color", DEFAULTS["font_color"], type=str),
         "width": settings.value("width", DEFAULTS["width"], type=int),
         "height": settings.value("height", DEFAULTS["height"], type=int),
+        "opacity": settings.value("opacity", DEFAULTS["opacity"], type=float),
     }
 
 def save_default_settings(data: dict):

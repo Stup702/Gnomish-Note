@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QSpinBox, QPushButton, QColorDialog,
-    QMessageBox
+    QMessageBox, QSlider
 )
 from PyQt6.QtGui import QColor, QFont
 from PyQt6.QtCore import Qt
@@ -135,7 +135,27 @@ class DefaultSettingsDialog(QDialog):
         self.height_spin.setValue(self._current_settings["height"])
         row_dim.addWidget(self.height_spin)
         
-        card1_layout.addLayout(row_dim)
+        # Row 6: Opacity
+        row_op = QHBoxLayout()
+        lbl_op = QLabel("Default Opacity")
+        lbl_op.setObjectName("RowLabel")
+        row_op.addWidget(lbl_op)
+        row_op.addStretch()
+
+        current_op_val = int(round(self._current_settings.get("opacity", 1.0) * 100))
+        self.lbl_op_val = QLabel(f"{current_op_val}%")
+        self.lbl_op_val.setStyleSheet("color: #aaaaaa; font-size: 11px; font-weight: bold; min-width: 32px;")
+        
+        self.opacity_slider = QSlider(Qt.Orientation.Horizontal)
+        self.opacity_slider.setRange(40, 100)
+        self.opacity_slider.setValue(current_op_val)
+        self.opacity_slider.setFixedWidth(130)
+        self.opacity_slider.valueChanged.connect(lambda val: self.lbl_op_val.setText(f"{val}%"))
+
+        row_op.addWidget(self.opacity_slider)
+        row_op.addWidget(self.lbl_op_val)
+        card1_layout.addLayout(row_op)
+
         main_layout.addWidget(card1)
 
         # -------------------------------------------------------------
@@ -316,6 +336,23 @@ class DefaultSettingsDialog(QDialog):
             QPushButton#BtnSave:hover {
                 background-color: #26ab6e;
             }
+            QSlider::groove:horizontal {
+                height: 4px;
+                background: #3e3e3e;
+                border-radius: 2px;
+            }
+            QSlider::sub-page:horizontal {
+                background: #3584e4;
+                border-radius: 2px;
+            }
+            QSlider::handle:horizontal {
+                background: #ffffff;
+                border: 1px solid rgba(0, 0, 0, 0.2);
+                width: 14px;
+                margin-top: -5px;
+                margin-bottom: -5px;
+                border-radius: 7px;
+            }
         """)
 
     def _decrease_font_size(self):
@@ -381,6 +418,9 @@ class DefaultSettingsDialog(QDialog):
         self._update_font_color_btn(self._current_settings["font_color"])
         self.width_spin.setValue(self._current_settings["width"])
         self.height_spin.setValue(self._current_settings["height"])
+        op_val = int(round(self._current_settings.get("opacity", 1.0) * 100))
+        self.opacity_slider.setValue(op_val)
+        self.lbl_op_val.setText(f"{op_val}%")
 
     def _update_extension_btn(self):
         import extension_installer
@@ -412,6 +452,7 @@ class DefaultSettingsDialog(QDialog):
             "color": self._selected_color,
             "font_color": self._selected_font_color,
             "width": self.width_spin.value(),
-            "height": self.height_spin.value()
+            "height": self.height_spin.value(),
+            "opacity": self.opacity_slider.value() / 100.0
         })
         self.accept()
