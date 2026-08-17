@@ -16,15 +16,15 @@ class TopBar(QWidget):
         self.badge = QLabel()
         if self._model.note_type == "emergency":
             self.badge.setText("● STICKY")
-            self.badge.setStyleSheet("color: #e67e22; font-weight: bold; font-size: 11px;")
+            self.badge.setStyleSheet("background: rgba(230, 126, 34, 0.15); color: #d35400; font-weight: 700; font-size: 10px; border-radius: 4px; padding: 2px 6px;")
         else:
             self.badge.setText("● NOTE")
-            self.badge.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 11px;")
+            self.badge.setStyleSheet("background: rgba(46, 204, 113, 0.15); color: #27ae60; font-weight: 700; font-size: 10px; border-radius: 4px; padding: 2px 6px;")
 
         layout.addWidget(self.badge)
 
         self.collapsed_title_label = QLabel()
-        self.collapsed_title_label.setStyleSheet("color: #333333; font-weight: bold; font-size: 11px; padding-left: 2px;")
+        self.collapsed_title_label.setStyleSheet("color: #333333; font-weight: bold; font-size: 11px; padding-left: 4px;")
         self.collapsed_title_label.hide()
         layout.addWidget(self.collapsed_title_label, stretch=1)
 
@@ -32,6 +32,20 @@ class TopBar(QWidget):
 
         self.btn_settings = QPushButton("⚙")
         self.btn_settings.setFixedSize(24, 24)
+        self.btn_settings.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_settings.setStyleSheet("""
+            QPushButton {
+                background: transparent;
+                border: none;
+                border-radius: 12px;
+                color: rgba(0, 0, 0, 0.45);
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background: rgba(0, 0, 0, 0.09);
+                color: rgba(0, 0, 0, 0.85);
+            }
+        """)
         self.btn_settings.clicked.connect(self._toggle_settings)
         layout.addWidget(self.btn_settings)
 
@@ -40,6 +54,20 @@ class TopBar(QWidget):
         if self._model.note_type != "emergency":
             self.btn_close = QPushButton("✕")
             self.btn_close.setFixedSize(24, 24)
+            self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.btn_close.setStyleSheet("""
+                QPushButton {
+                    background: transparent;
+                    border: none;
+                    border-radius: 12px;
+                    color: rgba(0, 0, 0, 0.45);
+                    font-size: 13px;
+                }
+                QPushButton:hover {
+                    background: rgba(231, 76, 60, 0.18);
+                    color: #c0392b;
+                }
+            """)
             self.btn_close.clicked.connect(self._close_window)
             layout.addWidget(self.btn_close)
         else:

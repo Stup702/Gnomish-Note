@@ -18,15 +18,15 @@ class ResizeHandle(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        points = [
-            QPoint(20, 0),
-            QPoint(20, 20),
-            QPoint(0, 20)
-        ]
-        polygon = QPolygon(points)
-        painter.setBrush(QBrush(QColor(0, 0, 0, 90)))
+        painter.setBrush(QBrush(QColor(0, 0, 0, 50)))
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawPolygon(polygon)
+        # 6-dot diagonal resize grip
+        painter.drawEllipse(14, 6, 2, 2)
+        painter.drawEllipse(10, 10, 2, 2)
+        painter.drawEllipse(14, 10, 2, 2)
+        painter.drawEllipse(6, 14, 2, 2)
+        painter.drawEllipse(10, 14, 2, 2)
+        painter.drawEllipse(14, 14, 2, 2)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
