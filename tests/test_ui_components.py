@@ -87,5 +87,19 @@ class TestUIComponents(unittest.TestCase):
         pop.eventFilter(other, click_ev)
         self.assertFalse(pop.isVisible())
 
+    def test_settings_popover_qwindow_event_filter(self):
+        # Verify filtering events from QWindow objects does not raise TypeError
+        from PyQt6.QtGui import QWindow
+        m = NoteModel()
+        win = QWidget()
+        win.show()
+        pop = SettingsPopover(win, m, self.nm, QWidget())
+        pop.show()
+        
+        qwin = QWindow()
+        click_ev = QMouseEvent(QMouseEvent.Type.MouseButtonPress, QPointF(900, 900), QPointF(900, 900), Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+        pop.eventFilter(qwin, click_ev)
+        self.assertFalse(pop.isVisible())
+
 if __name__ == "__main__":
     unittest.main()
