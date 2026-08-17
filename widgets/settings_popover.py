@@ -1,6 +1,10 @@
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QFontComboBox, QSpinBox, QPushButton, QColorDialog
+from PyQt6.QtWidgets import (
+    QFrame, QVBoxLayout, QHBoxLayout, QLabel,
+    QFontComboBox, QSpinBox, QPushButton, QColorDialog,
+    QApplication, QWidget
+)
 from PyQt6.QtGui import QColor, QFont
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, QEvent
 
 class SettingsPopover(QFrame):
     def __init__(self, note_window, model, note_manager, note_content_widget):
@@ -38,6 +42,7 @@ class SettingsPopover(QFrame):
         self._model = model
         self._nm = note_manager
         self._note_content_widget = note_content_widget
+        self._color_dialog_active = False
 
         # Debounce timers — prevents rapid repaints while scrolling font list
         self._font_timer = QTimer(self)
@@ -126,34 +131,83 @@ class SettingsPopover(QFrame):
 
     # --- Note Color ---
     def _on_color_clicked(self):
-        color = QColorDialog.getColor(
-            initial=QColor(self._model.color),
-            parent=self.window(),
-            options=QColorDialog.ColorDialogOption.DontUseNativeDialog
-        )
-        if color.isValid():
-            hex_color = color.name()
-            self._model.color = hex_color
-            self._update_color_btn(hex_color)
-            self._note_content_widget.set_color(hex_color)
-            self._nm.update_note(self._model)
+        self._color_dialog_active = True
+        try:
+            color = QColorDialog.getColor(
+                initial=QColor(self._model.color),
+                parent=self.window(),
+                options=QColorDialog.ColorDialogOption.DontUseNativeDialog
+            )
+            if color.isValid():
+                hex_color = color.name()
+                self._model.color = hex_color
+                self._update_color_btn(hex_color)
+                self._note_content_widget.set_color(hex_color)
+                self._nm.update_note(self._model)
+        finally:
+            self._color_dialog_active = False
 
     # --- Font Color ---
     def _on_font_color_clicked(self):
-        current_fc = getattr(self._model, "font_color", "#333333")
-        color = QColorDialog.getColor(
-            initial=QColor(current_fc),
-            parent=self.window(),
-            options=QColorDialog.ColorDialogOption.DontUseNativeDialog
-        )
-        if color.isValid():
-            hex_color = color.name()
-            self._model.font_color = hex_color
-            self._update_font_color_btn(hex_color)
-            self._note_content_widget.set_font_color(hex_color)
-            self._nm.update_note(self._model)
+        self._color_dialog_active = True
+        try:
+            current_fc = getattr(self._model, "font_color", "#333333")
+            color = QColorDialog.getColor(
+                initial=QColor(current_fc),
+                parent=self.window(),
+                options=QColorDialog.ColorDialogOption.DontUseNativeDialog
+            )
+            if color.isValid():
+                hex_color = color.name()
+                self._model.font_color = hex_color
+                self._update_font_color_btn(hex_color)
+                self._note_content_widget.set_font_color(hex_color)
+                self._nm.update_note(self._model)
+        finally:
+            self._color_dialog_active = False
 
     def showEvent(self, event):
         super().showEvent(event)
+        app = QApplication.instance()
+        if app:
+            app.installEventFilter(self)
         if self.parent():
             self.move(self.parent().width() - self.width() - 10, 40)
+            self.raise_()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        app = QApplication.instance()
+        if app:
+            app.removeEventFilter(self)
+
+    def eventFilter(self, watched, event):
+        if not self.isVisible():
+            return False
+
+        # Close on Escape key
+        if event.type() == QEvent.Type.KeyPress:
+            if event.key() == Qt.Key.Key_Escape:
+                self.hide()
+                return True
+
+        # Close on clicking anywhere outside this popover
+        if event.type() == QEvent.Type.MouseButtonPress:
+            if self._color_dialog_active:
+                return False
+            # Check if clicked inside this popover or any of its child widgets
+            if watched == self or self.isAncestorOf(watched):
+                return False
+            # Check if clicked on a combobox dropdown view belonging to font_combo
+            if hasattr(self, 'font_combo') and (watched == self.font_combo.view() or watched == self.font_combo.view().window()):
+                return False
+            # Check if clicked on the settings button of this note (handled by its own click toggle)
+            if (hasattr(self, '_note_content_widget') and
+                hasattr(self._note_content_widget, 'top_bar') and
+                watched == self._note_content_widget.top_bar.btn_settings):
+                return False
+
+            self.hide()
+            return False
+
+        return False
