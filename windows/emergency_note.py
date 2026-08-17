@@ -30,6 +30,8 @@ class EmergencyNoteWindow(QWidget):
     def showEvent(self, event):
         self._restoring = True
         super().showEvent(event)
+        self.move(self._model.pos_x, self._model.pos_y)
+        self.resize(self._model.width, self._model.height)
         if hasattr(self, '_content_widget') and self._content_widget.resize_handle:
             rh = self._content_widget.resize_handle
             rh.move(self.width() - rh.width() - 2, self.height() - rh.height() - 2)

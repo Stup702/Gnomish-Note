@@ -20,12 +20,15 @@ class NoteManager(QObject):
 
     def load_all(self):
         from PyQt6.QtWidgets import QApplication
-        from PyQt6.QtCore import QPoint
         screen_geom = QApplication.primaryScreen().availableGeometry()
         
         loaded_notes = storage.load_notes()
         for note in loaded_notes:
-            if not screen_geom.contains(QPoint(note.pos_x, note.pos_y)):
+            # Only reset if note is completely outside all monitor bounds
+            if (note.pos_x < -note.width + 30 or
+                note.pos_x > screen_geom.width() - 30 or
+                note.pos_y < -note.height + 30 or
+                note.pos_y > screen_geom.height() - 30):
                 note.pos_x, note.pos_y = 100, 100
                 
             self._notes[note.id] = note
