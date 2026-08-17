@@ -39,6 +39,7 @@ class NoteContentWidget(QWidget):
         container_layout.addWidget(self.top_bar)
         
         self.text_edit = QTextEdit()
+        self.text_edit.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.text_edit.setPlaceholderText("Write your note here...")
         self.text_edit.setStyleSheet("QTextEdit { border: none; background: transparent; }")
         
