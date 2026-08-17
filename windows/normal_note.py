@@ -62,7 +62,5 @@ class NormalNoteWindow(QWidget):
         self._note_manager.update_note(self._model)
 
     def closeEvent(self, event):
-        event.ignore()
-        self._model.minimized = True
-        self._note_manager.update_note(self._model)
+        event.accept()
         self.hide()

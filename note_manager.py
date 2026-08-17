@@ -40,13 +40,15 @@ class NoteManager(QObject):
             window = EmergencyNoteWindow(model=model, note_manager=self)
             self._windows[model.id] = window
             window.show()
+            window.raise_()
         elif model.note_type == NOTE_TYPE_NORMAL:
             window = NormalNoteWindow(model=model, note_manager=self)
             self._windows[model.id] = window
-            if model.minimized:
-                window.showMinimized()
-            else:
+            if not model.minimized:
                 window.show()
+                window.raise_()
+            else:
+                window.hide()
 
     def create_note(self, note_type: str) -> NoteModel:
         model = NoteModel(note_type=note_type)
