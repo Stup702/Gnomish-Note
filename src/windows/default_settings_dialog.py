@@ -12,7 +12,7 @@ class DefaultSettingsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Default Note Settings")
-        self.setFixedSize(410, 500)
+        self.setFixedSize(410, 535)
         
         self._current_settings = settings_manager.get_default_settings()
         self._selected_color = self._current_settings["color"]
@@ -169,8 +169,24 @@ class DefaultSettingsDialog(QDialog):
         card2.setObjectName("PreferencesCard")
         card2_layout = QVBoxLayout(card2)
         card2_layout.setContentsMargins(12, 10, 12, 10)
-        card2_layout.setSpacing(8)
+        card2_layout.setSpacing(10)
 
+        # Row 1: Start on Startup
+        row_autostart = QHBoxLayout()
+        lbl_autostart = QLabel("Start on Startup")
+        lbl_autostart.setObjectName("RowLabel")
+        row_autostart.addWidget(lbl_autostart)
+        row_autostart.addStretch()
+
+        self.btn_autostart = QPushButton()
+        self.btn_autostart.setObjectName("BtnAutostart")
+        self.btn_autostart.setFixedHeight(28)
+        self.btn_autostart.clicked.connect(self._on_autostart_clicked)
+        row_autostart.addWidget(self.btn_autostart)
+        self._update_autostart_btn()
+        card2_layout.addLayout(row_autostart)
+
+        # Row 2: Alt-Tab Filtering
         row_ext = QHBoxLayout()
         lbl_ext = QLabel("Alt-Tab Filtering")
         lbl_ext.setObjectName("RowLabel")
@@ -287,6 +303,17 @@ class DefaultSettingsDialog(QDialog):
                 padding: 4px 10px;
             }
             QPushButton#BtnExtAction:hover {
+                background-color: #3e3e3e;
+            }
+            QPushButton#BtnAutostart {
+                background-color: #323232;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 600;
+                padding: 4px 10px;
+            }
+            QPushButton#BtnAutostart:hover {
                 background-color: #3e3e3e;
             }
             QPushButton#BtnExtUninstall {
@@ -421,6 +448,22 @@ class DefaultSettingsDialog(QDialog):
         op_val = int(round(self._current_settings.get("opacity", 1.0) * 100))
         self.opacity_slider.setValue(op_val)
         self.lbl_op_val.setText(f"{op_val}%")
+
+    def _update_autostart_btn(self):
+        from core import autostart
+        if autostart.is_autostart_enabled():
+            self.btn_autostart.setText("✔ Enabled")
+            self.btn_autostart.setStyleSheet("color: #2ec27e; font-weight: 600; font-size: 11px;")
+            self.btn_autostart.setToolTip("Autostart is enabled. Click to disable starting on system login.")
+        else:
+            self.btn_autostart.setText("⚡ Enable")
+            self.btn_autostart.setStyleSheet("color: #e67e22; font-weight: 600; font-size: 11px;")
+            self.btn_autostart.setToolTip("Click to automatically start Gnomish Note on system login.")
+
+    def _on_autostart_clicked(self):
+        from core import autostart
+        autostart.toggle_autostart()
+        self._update_autostart_btn()
 
     def _update_extension_btn(self):
         from core import extension_installer

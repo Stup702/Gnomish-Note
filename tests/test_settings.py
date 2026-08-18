@@ -67,7 +67,72 @@ class TestSettings(unittest.TestCase):
         self.assertEqual(dlg.size_spin.value(), 11)
         self.assertEqual(dlg.width_spin.value(), 280)
         self.assertEqual(dlg.height_spin.value(), 320)
+        self.assertIsNotNone(dlg.btn_autostart)
         dlg.close()
+
+    def test_autostart_enable_disable_toggle(self):
+        import tempfile
+        import os
+        from core import autostart
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            orig_xdg = os.environ.get("XDG_CONFIG_HOME")
+            try:
+                os.environ["XDG_CONFIG_HOME"] = tmpdir
+                self.assertFalse(autostart.is_autostart_enabled())
+
+                # Enable
+                self.assertTrue(autostart.enable_autostart())
+                self.assertTrue(autostart.is_autostart_enabled())
+                desktop_file = autostart.get_autostart_file_path()
+                self.assertTrue(desktop_file.exists())
+                self.assertIn("Gnomish Note", desktop_file.read_text())
+
+                # Toggle (should disable)
+                self.assertFalse(autostart.toggle_autostart())
+                self.assertFalse(autostart.is_autostart_enabled())
+                self.assertFalse(desktop_file.exists())
+
+                # Toggle again (should enable)
+                self.assertTrue(autostart.toggle_autostart())
+                self.assertTrue(autostart.is_autostart_enabled())
+
+                # Disable
+                self.assertTrue(autostart.disable_autostart())
+                self.assertFalse(autostart.is_autostart_enabled())
+            finally:
+                if orig_xdg is not None:
+                    os.environ["XDG_CONFIG_HOME"] = orig_xdg
+                else:
+                    os.environ.pop("XDG_CONFIG_HOME", None)
+
+    def test_dialog_autostart_button_click(self):
+        import tempfile
+        import os
+        from core import autostart
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            orig_xdg = os.environ.get("XDG_CONFIG_HOME")
+            try:
+                os.environ["XDG_CONFIG_HOME"] = tmpdir
+                dlg = DefaultSettingsDialog()
+                self.assertIn("Enable", dlg.btn_autostart.text())
+
+                # Click autostart button
+                dlg.btn_autostart.click()
+                self.assertTrue(autostart.is_autostart_enabled())
+                self.assertIn("Enabled", dlg.btn_autostart.text())
+
+                # Click again to disable
+                dlg.btn_autostart.click()
+                self.assertFalse(autostart.is_autostart_enabled())
+                self.assertIn("Enable", dlg.btn_autostart.text())
+                dlg.close()
+            finally:
+                if orig_xdg is not None:
+                    os.environ["XDG_CONFIG_HOME"] = orig_xdg
+                else:
+                    os.environ.pop("XDG_CONFIG_HOME", None)
 
 if __name__ == "__main__":
     unittest.main()
