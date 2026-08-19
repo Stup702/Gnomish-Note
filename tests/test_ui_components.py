@@ -121,23 +121,27 @@ class TestUIComponents(unittest.TestCase):
         win.close()
 
     def test_normal_note_collapsible_mini_mode(self):
-        m = NoteModel(note_type=NOTE_TYPE_NORMAL, width=280, height=320)
+        m = NoteModel(note_type=NOTE_TYPE_NORMAL, title="Project Specs", width=280, height=320)
         win = NormalNoteWindow(m, self.nm)
         win.show()
         
         self.assertFalse(m.collapsed)
         self.assertTrue(win._content_widget.text_edit.isVisible())
+        self.assertFalse(win._content_widget.top_bar.collapsed_title_label.isVisible())
         
         # Collapse
         win.toggle_collapsed()
         self.assertTrue(m.collapsed)
         self.assertFalse(win._content_widget.text_edit.isVisible())
+        self.assertTrue(win._content_widget.top_bar.collapsed_title_label.isVisible())
+        self.assertEqual(win._content_widget.top_bar.collapsed_title_label.text(), "Project Specs")
         self.assertLess(win.height(), 60)
         
         # Expand
         win.toggle_collapsed()
         self.assertFalse(m.collapsed)
         self.assertTrue(win._content_widget.text_edit.isVisible())
+        self.assertFalse(win._content_widget.top_bar.collapsed_title_label.isVisible())
         self.assertEqual(win.height(), 320)
         win.close()
 

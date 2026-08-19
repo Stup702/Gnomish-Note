@@ -22,6 +22,12 @@ class TopBar(QWidget):
             self.badge.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 11px;")
 
         layout.addWidget(self.badge)
+
+        self.collapsed_title_label = QLabel()
+        self.collapsed_title_label.setStyleSheet("color: #333333; font-weight: bold; font-size: 11px; padding-left: 2px;")
+        self.collapsed_title_label.hide()
+        layout.addWidget(self.collapsed_title_label, stretch=1)
+
         layout.addStretch()
 
         self.btn_settings = QPushButton("⚙")
@@ -41,6 +47,18 @@ class TopBar(QWidget):
 
         # Make the top bar a drag target with a hand cursor
         self.setCursor(Qt.CursorShape.SizeAllCursor)
+
+    def set_collapsed_mode(self, collapsed: bool):
+        if collapsed:
+            title = getattr(self._model, "title", "").strip()
+            if not title:
+                from PyQt6.QtGui import QTextDocumentFragment
+                clean = QTextDocumentFragment.fromHtml(getattr(self._model, "content_html", "")).toPlainText().strip()
+                title = clean[:22].replace('\n', ' ') if clean else "Untitled Note"
+            self.collapsed_title_label.setText(title)
+            self.collapsed_title_label.show()
+        else:
+            self.collapsed_title_label.hide()
 
     def _toggle_settings(self):
         if self._settings_popover:
