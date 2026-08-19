@@ -48,6 +48,16 @@ class TopBar(QWidget):
         # Make the top bar a drag target with a hand cursor
         self.setCursor(Qt.CursorShape.SizeAllCursor)
 
+        # Connect note_updated signal to live-update title if note is rolled up
+        if hasattr(self._nm, 'note_updated'):
+            self._nm.note_updated.connect(self._on_note_updated)
+
+    def _on_note_updated(self, model):
+        if model.id == self._model.id:
+            self._model = model
+            if getattr(self._model, "collapsed", False):
+                self.set_collapsed_mode(True)
+
     def set_collapsed_mode(self, collapsed: bool):
         if collapsed:
             title = getattr(self._model, "title", "").strip()
