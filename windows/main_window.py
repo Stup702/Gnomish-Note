@@ -121,14 +121,19 @@ class MainWindow(QMainWindow):
         
         # Top buttons
         btn_layout = QHBoxLayout()
-        btn_emerg = QPushButton("+ New Emergency Note")
+        btn_emerg = QPushButton("+ Emergency")
         btn_emerg.clicked.connect(lambda: self._note_manager.create_note("emergency"))
         
-        btn_norm = QPushButton("+ New Normal Note")
+        btn_norm = QPushButton("+ Note")
         btn_norm.clicked.connect(lambda: self._note_manager.create_note("normal"))
         
+        btn_defaults = QPushButton("⚙ Settings")
+        btn_defaults.setToolTip("Configure default note styling, fonts, and dimensions")
+        btn_defaults.clicked.connect(self._open_default_settings)
+
         btn_layout.addWidget(btn_emerg)
         btn_layout.addWidget(btn_norm)
+        btn_layout.addWidget(btn_defaults)
         layout.addLayout(btn_layout)
         
         # List
@@ -191,6 +196,11 @@ class MainWindow(QMainWindow):
             window.raise_()
             window.activateWindow()
             
+    def _open_default_settings(self):
+        from windows.default_settings_dialog import DefaultSettingsDialog
+        dlg = DefaultSettingsDialog(self)
+        dlg.exec()
+
     def closeEvent(self, event):
         from PyQt6.QtWidgets import QApplication
         self._note_manager.close_all_windows()
