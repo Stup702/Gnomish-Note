@@ -65,6 +65,15 @@ class TopBar(QWidget):
             self.window().move(event.globalPosition().toPoint() - self._drag_pos)
             event.accept()
 
+    def mouseDoubleClickEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            win = self.window()
+            if hasattr(win, 'toggle_collapsed'):
+                win.toggle_collapsed()
+                event.accept()
+                return
+        super().mouseDoubleClickEvent(event)
+
     def mouseReleaseEvent(self, event):
         self._drag_pos = None
         self.window().activateWindow()
