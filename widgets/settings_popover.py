@@ -80,33 +80,77 @@ class SettingsPopover(QFrame):
         layout.addLayout(size_layout)
 
         # Note Color
-        color_layout = QHBoxLayout()
-        color_layout.addWidget(QLabel("Note Color:"))
-        self.btn_color = QPushButton()
-        self.btn_color.setFixedSize(40, 24)
-        self._update_color_btn(self._model.color)
+        PASTEL_PALETTE = [
+            ("#fdf5c9", "Cream Yellow"),
+            ("#d4edda", "Mint Green"),
+            ("#d1ecf1", "Sky Blue"),
+            ("#f8d7da", "Soft Rose"),
+            ("#e2d9f3", "Lavender"),
+            ("#fff3cd", "Warm Peach"),
+            ("#2e3440", "Nord Dark")
+        ]
+
+        color_layout = QVBoxLayout()
+        color_layout.setSpacing(4)
+        
+        color_header = QHBoxLayout()
+        color_header.addWidget(QLabel("Note Color:"))
+        self.btn_color = QPushButton("🎨")
+        self.btn_color.setToolTip("Custom Color Picker...")
+        self.btn_color.setFixedSize(26, 22)
         self.btn_color.clicked.connect(self._on_color_clicked)
-        color_layout.addWidget(self.btn_color)
+        color_header.addWidget(self.btn_color)
+        color_header.addStretch()
+        color_layout.addLayout(color_header)
+
+        # Quick Pastel Swatches Row
+        swatch_layout = QHBoxLayout()
+        swatch_layout.setSpacing(5)
+        for hex_col, name in PASTEL_PALETTE:
+            btn = QPushButton()
+            btn.setFixedSize(20, 20)
+            btn.setToolTip(name)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {hex_col};
+                    border: 1px solid rgba(255,255,255,0.2);
+                    border-radius: 10px;
+                }}
+                QPushButton:hover {{
+                    border: 2px solid #58a6ff;
+                }}
+            """)
+            btn.clicked.connect(lambda checked=False, c=hex_col: self._on_swatch_clicked(c))
+            swatch_layout.addWidget(btn)
+        swatch_layout.addStretch()
+        color_layout.addLayout(swatch_layout)
         layout.addLayout(color_layout)
 
         # Font Color
         font_color_layout = QHBoxLayout()
-        font_color_layout.addWidget(QLabel("Font Color:"))
+        font_color_layout.addWidget(QLabel("Text Color:"))
         self.btn_font_color = QPushButton()
-        self.btn_font_color.setFixedSize(40, 24)
+        self.btn_font_color.setFixedSize(36, 22)
         self._update_font_color_btn(getattr(self._model, "font_color", "#333333"))
         self.btn_font_color.clicked.connect(self._on_font_color_clicked)
         font_color_layout.addWidget(self.btn_font_color)
+        font_color_layout.addStretch()
         layout.addLayout(font_color_layout)
 
-        self.setFixedWidth(230)
+        self.setFixedWidth(240)
         self.adjustSize()
 
+    def _on_swatch_clicked(self, hex_color):
+        self._model.color = hex_color
+        self._note_content_widget.set_color(hex_color)
+        self._nm.update_note(self._model)
+
     def _update_color_btn(self, color_hex):
-        self.btn_color.setStyleSheet(f"background-color: {color_hex}; border: 1px solid #999;")
+        pass
 
     def _update_font_color_btn(self, color_hex):
-        self.btn_font_color.setStyleSheet(f"background-color: {color_hex}; border: 1px solid #999;")
+        self.btn_font_color.setStyleSheet(f"background-color: {color_hex}; border: 1px solid #999; border-radius: 3px;")
 
     # --- Font ---
     def _on_font_changed(self, font):
