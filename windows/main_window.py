@@ -127,11 +127,32 @@ class MainWindow(QMainWindow):
         if (not extension_installer.is_extension_installed() and
                 not self.settings.value("extension_banner_dismissed", False, type=bool)):
             self.banner_layout = QHBoxLayout()
-            self.banner_label = QLabel("Note: Custom extension required for proper Alt-Tab hiding.")
+            self.banner_layout.setContentsMargins(8, 4, 8, 4)
+            self.banner_layout.setSpacing(8)
+            
+            self.banner_label = QLabel("Alt-Tab integration extension is not installed.")
             self.banner_layout.addWidget(self.banner_label, stretch=1)
             
+            install_btn = QPushButton("Install Extension")
+            install_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #d08770;
+                    color: #2e3440;
+                    font-weight: bold;
+                    font-size: 11px;
+                    border-radius: 3px;
+                    padding: 2px 6px;
+                }
+                QPushButton:hover {
+                    background-color: #ebcb8b;
+                }
+            """)
+            install_btn.clicked.connect(self._install_extension_from_banner)
+            self.banner_layout.addWidget(install_btn)
+            
             dismiss_btn = QPushButton("✕")
-            dismiss_btn.setFixedSize(24, 24)
+            dismiss_btn.setFixedSize(22, 22)
+            dismiss_btn.setToolTip("Dismiss Banner")
             dismiss_btn.clicked.connect(self._dismiss_banner)
             self.banner_layout.addWidget(dismiss_btn)
             
@@ -150,14 +171,14 @@ class MainWindow(QMainWindow):
                     font-weight: bold;
                     background: transparent;
                 }
-                QPushButton {
+                QPushButton#DismissBtn {
                     background: transparent;
                     border: none;
                     color: #ebcb8b;
                     font-weight: bold;
                     font-size: 13px;
                 }
-                QPushButton:hover {
+                QPushButton#DismissBtn:hover {
                     background: rgba(255, 255, 255, 0.15);
                     border-radius: 3px;
                 }
@@ -204,8 +225,14 @@ class MainWindow(QMainWindow):
         self._note_manager.note_updated.connect(self._on_note_updated)
         
     def _dismiss_banner(self):
-        self.banner_widget.hide()
+        if hasattr(self, 'banner_widget'):
+            self.banner_widget.hide()
         self.settings.setValue("extension_banner_dismissed", True)
+
+    def _install_extension_from_banner(self):
+        extension_installer.install_and_enable_extension(self)
+        if extension_installer.is_extension_installed():
+            self._dismiss_banner()
         
     def _on_note_created(self, model):
         item = QListWidgetItem(self.list_widget)
