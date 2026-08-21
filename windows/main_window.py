@@ -22,10 +22,10 @@ class NoteListItem(QWidget):
         self.type_label = QLabel()
         if model.note_type == "emergency":
             self.type_label.setText("⚠")
-            self.type_label.setStyleSheet("color: #e74c3c; font-weight: bold; font-size: 14px;")
+            self.type_label.setStyleSheet("color: #d9534f; font-weight: bold; font-size: 13px;")
         else:
-            self.type_label.setText("📌")
-            self.type_label.setStyleSheet("color: #3498db; font-weight: bold; font-size: 14px;")
+            self.type_label.setText("●")
+            self.type_label.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 14px;")
         layout.addWidget(self.type_label)
         
         self.preview_label = QLabel()
@@ -103,10 +103,10 @@ class NoteListItem(QWidget):
         self._model = model
         if model.note_type == "emergency":
             self.type_label.setText("⚠")
-            self.type_label.setStyleSheet("color: #e74c3c; font-weight: bold; font-size: 14px;")
+            self.type_label.setStyleSheet("color: #d9534f; font-weight: bold; font-size: 13px;")
         else:
-            self.type_label.setText("📌")
-            self.type_label.setStyleSheet("color: #3498db; font-weight: bold; font-size: 14px;")
+            self.type_label.setText("●")
+            self.type_label.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 14px;")
             
         self._update_text()
 
