@@ -136,8 +136,32 @@ class MainWindow(QMainWindow):
             self.banner_layout.addWidget(dismiss_btn)
             
             self.banner_widget = QWidget()
+            self.banner_widget.setObjectName("BannerWidget")
             self.banner_widget.setLayout(self.banner_layout)
-            self.banner_widget.setStyleSheet("background-color: #fffae6; border: 1px solid #ffe58f;")
+            self.banner_widget.setStyleSheet("""
+                QWidget#BannerWidget {
+                    background-color: #3b3322;
+                    border: 1px solid #d08770;
+                    border-radius: 4px;
+                }
+                QLabel {
+                    color: #ebcb8b;
+                    font-size: 11px;
+                    font-weight: bold;
+                    background: transparent;
+                }
+                QPushButton {
+                    background: transparent;
+                    border: none;
+                    color: #ebcb8b;
+                    font-weight: bold;
+                    font-size: 13px;
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 0.15);
+                    border-radius: 3px;
+                }
+            """)
             layout.addWidget(self.banner_widget)
         
         # Top buttons
