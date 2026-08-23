@@ -37,7 +37,7 @@ class TestUIComponents(unittest.TestCase):
         win = NormalNoteWindow(m, self.nm)
         flags = win.windowFlags()
         self.assertTrue(bool(flags & Qt.WindowType.FramelessWindowHint))
-        self.assertTrue(bool(flags & Qt.WindowType.Tool))
+        self.assertTrue(bool(flags & Qt.WindowType.Window))
         # TopBar MUST have close button for normal note
         self.assertIsNotNone(win._content_widget.top_bar.btn_close)
         win.close()

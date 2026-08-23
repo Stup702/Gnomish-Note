@@ -21,11 +21,13 @@ class NoteListItem(QWidget):
         # Type icon/label badge
         self.type_label = QLabel()
         if model.note_type == "emergency":
-            self.type_label.setText("⚠")
-            self.type_label.setStyleSheet("color: #d9534f; font-weight: bold; font-size: 13px;")
+            self.type_label.setText("●")
+            self.type_label.setStyleSheet("color: #e67e22; font-weight: bold; font-size: 14px;")
+            self.type_label.setToolTip("Always-on-top Sticky Note")
         else:
             self.type_label.setText("●")
             self.type_label.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 14px;")
+            self.type_label.setToolTip("Standard Note")
         layout.addWidget(self.type_label)
         
         self.preview_label = QLabel()
@@ -102,11 +104,13 @@ class NoteListItem(QWidget):
     def update_model(self, model):
         self._model = model
         if model.note_type == "emergency":
-            self.type_label.setText("⚠")
-            self.type_label.setStyleSheet("color: #d9534f; font-weight: bold; font-size: 13px;")
+            self.type_label.setText("●")
+            self.type_label.setStyleSheet("color: #e67e22; font-weight: bold; font-size: 14px;")
+            self.type_label.setToolTip("Always-on-top Sticky Note")
         else:
             self.type_label.setText("●")
             self.type_label.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 14px;")
+            self.type_label.setToolTip("Standard Note")
             
         self._update_text()
 
@@ -187,10 +191,12 @@ class MainWindow(QMainWindow):
         
         # Top buttons
         btn_layout = QHBoxLayout()
-        btn_emerg = QPushButton("+ Emergency")
+        btn_emerg = QPushButton("+ Sticky")
+        btn_emerg.setToolTip("Create a persistent, always-on-top Sticky Note")
         btn_emerg.clicked.connect(lambda: self._note_manager.create_note("emergency"))
         
         btn_norm = QPushButton("+ Note")
+        btn_norm.setToolTip("Create a standard Sticky Note")
         btn_norm.clicked.connect(lambda: self._note_manager.create_note("normal"))
         
         btn_defaults = QPushButton("⚙ Settings")
