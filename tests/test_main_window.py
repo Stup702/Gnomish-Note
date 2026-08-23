@@ -44,7 +44,25 @@ class TestMainWindow(unittest.TestCase):
         
         item = self.mw.list_widget.item(0)
         widget = self.mw.list_widget.itemWidget(item)
-        self.assertIn("Grocery List", widget.preview_label.text())
+        self.assertEqual("Grocery List", widget.title_label.text())
+        self.assertIn("Milk, Eggs, Bread", widget.preview_label.text())
+
+    def test_search_filtering(self):
+        n1 = self.nm.create_note(NOTE_TYPE_NORMAL)
+        n1.title = "Shopping"
+        self.nm.update_note(n1)
+
+        n2 = self.nm.create_note(NOTE_TYPE_NORMAL)
+        n2.title = "Work Tasks"
+        self.nm.update_note(n2)
+
+        self.mw.search_input.setText("shop")
+        self.assertFalse(self.mw.list_widget.item(0).isHidden())
+        self.assertTrue(self.mw.list_widget.item(1).isHidden())
+
+        self.mw.search_input.setText("")
+        self.assertFalse(self.mw.list_widget.item(0).isHidden())
+        self.assertFalse(self.mw.list_widget.item(1).isHidden())
 
     def test_click_item_reopens_closed_note(self):
         note = self.nm.create_note(NOTE_TYPE_NORMAL)

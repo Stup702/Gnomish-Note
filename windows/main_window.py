@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QListWidget, QListWidgetItem, QLabel,
-    QMessageBox
+    QLineEdit, QMessageBox
 )
 from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QTextDocumentFragment
@@ -13,42 +13,94 @@ class NoteListItem(QWidget):
         super().__init__()
         self._model = model
         self._note_manager = note_manager
+        self.setObjectName("NoteCard")
         
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(6)
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(10, 8, 8, 8)
+        main_layout.setSpacing(10)
         
-        # Type icon/label badge
+        # Color pip & type indicator
         self.type_label = QLabel()
-        if model.note_type == "emergency":
-            self.type_label.setText("●")
-            self.type_label.setStyleSheet("color: #e67e22; font-weight: bold; font-size: 14px;")
-            self.type_label.setToolTip("Always-on-top Sticky Note")
-        else:
-            self.type_label.setText("●")
-            self.type_label.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 14px;")
-            self.type_label.setToolTip("Standard Note")
-        layout.addWidget(self.type_label)
+        self._update_badge()
+        main_layout.addWidget(self.type_label)
+        
+        # Text details (Title + Preview)
+        text_layout = QVBoxLayout()
+        text_layout.setContentsMargins(0, 0, 0, 0)
+        text_layout.setSpacing(2)
+        
+        self.title_label = QLabel()
+        self.title_label.setObjectName("CardTitle")
         
         self.preview_label = QLabel()
-        layout.addWidget(self.preview_label, stretch=1)
+        self.preview_label.setObjectName("CardPreview")
+        
+        text_layout.addWidget(self.title_label)
+        text_layout.addWidget(self.preview_label)
+        main_layout.addLayout(text_layout, stretch=1)
+        
         self._update_text()
         
         # Rename button
         rename_btn = QPushButton("✏")
+        rename_btn.setObjectName("CardActionBtn")
         rename_btn.setToolTip("Rename Note")
-        rename_btn.setFixedSize(28, 28)
+        rename_btn.setFixedSize(26, 26)
         rename_btn.clicked.connect(self._on_rename)
-        layout.addWidget(rename_btn)
+        main_layout.addWidget(rename_btn)
 
         # Delete button
         del_btn = QPushButton("🗑")
+        del_btn.setObjectName("CardActionBtn")
         del_btn.setToolTip("Delete Note")
-        del_btn.setFixedSize(28, 28)
+        del_btn.setFixedSize(26, 26)
         del_btn.clicked.connect(self._on_delete)
-        layout.addWidget(del_btn)
+        main_layout.addWidget(del_btn)
 
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setStyleSheet("""
+            QWidget#NoteCard {
+                background-color: #262626;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 8px;
+            }
+            QWidget#NoteCard:hover {
+                background-color: #2f2f2f;
+                border: 1px solid rgba(255, 255, 255, 0.16);
+            }
+            QLabel#CardTitle {
+                color: #ffffff;
+                font-weight: 600;
+                font-size: 12px;
+                background: transparent;
+            }
+            QLabel#CardPreview {
+                color: #9a9996;
+                font-size: 11px;
+                background: transparent;
+            }
+            QPushButton#CardActionBtn {
+                background: transparent;
+                border: none;
+                border-radius: 13px;
+                color: #888888;
+                font-size: 12px;
+            }
+            QPushButton#CardActionBtn:hover {
+                background: rgba(255, 255, 255, 0.15);
+                color: #ffffff;
+            }
+        """)
+
+    def _update_badge(self):
+        if self._model.note_type == "emergency":
+            self.type_label.setText("●")
+            self.type_label.setStyleSheet("color: #e67e22; font-weight: bold; font-size: 14px; background: transparent;")
+            self.type_label.setToolTip("Always-on-top Sticky Note")
+        else:
+            self.type_label.setText("●")
+            self.type_label.setStyleSheet("color: #2ec27e; font-weight: bold; font-size: 14px; background: transparent;")
+            self.type_label.setToolTip("Standard Note")
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -90,62 +142,68 @@ class NoteListItem(QWidget):
         title = getattr(self._model, "title", "").strip()
         content = getattr(self._model, "content_html", "")
         clean_text = QTextDocumentFragment.fromHtml(content).toPlainText().strip()
-        preview = clean_text[:35].replace('\n', ' ') if clean_text else ""
+        preview = clean_text[:40].replace('\n', ' ') if clean_text else "Empty note"
         
-        if title and preview:
-            self.preview_label.setText(f"<b>{title}</b> — <span style='color: #888;'>{preview}</span>")
-        elif title:
-            self.preview_label.setText(f"<b>{title}</b>")
-        elif preview:
+        if title:
+            self.title_label.setText(title)
+            self.title_label.show()
             self.preview_label.setText(preview)
         else:
-            self.preview_label.setText("Empty Note")
+            self.title_label.hide()
+            self.preview_label.setText(preview)
+            self.preview_label.setStyleSheet("color: #e0e0e0; font-size: 12px; font-weight: 500;")
 
     def update_model(self, model):
         self._model = model
-        if model.note_type == "emergency":
-            self.type_label.setText("●")
-            self.type_label.setStyleSheet("color: #e67e22; font-weight: bold; font-size: 14px;")
-            self.type_label.setToolTip("Always-on-top Sticky Note")
-        else:
-            self.type_label.setText("●")
-            self.type_label.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 14px;")
-            self.type_label.setToolTip("Standard Note")
-            
+        self._update_badge()
         self._update_text()
+
+    def matches_query(self, query: str) -> bool:
+        if not query:
+            return True
+        q = query.lower()
+        title = getattr(self._model, "title", "").lower()
+        content = getattr(self._model, "content_html", "")
+        clean_text = QTextDocumentFragment.fromHtml(content).toPlainText().lower()
+        return q in title or q in clean_text
+
 
 class MainWindow(QMainWindow):
     def __init__(self, note_manager):
         super().__init__()
         self._note_manager = note_manager
         
-        self.setWindowTitle("Sticky Notes")
-        self.resize(400, 500)
+        self.setWindowTitle("Gnomish Note")
+        self.resize(380, 520)
+        self.setMinimumSize(320, 400)
         
         central_widget = QWidget()
+        central_widget.setObjectName("CentralWidget")
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(10)
         
         # Extension Banner — only show if extension is not installed
         self.settings = QSettings("gnome-sticky-notes", "main")
         if (not extension_installer.is_extension_installed() and
                 not self.settings.value("extension_banner_dismissed", False, type=bool)):
             self.banner_layout = QHBoxLayout()
-            self.banner_layout.setContentsMargins(8, 4, 8, 4)
+            self.banner_layout.setContentsMargins(10, 6, 10, 6)
             self.banner_layout.setSpacing(8)
             
-            self.banner_label = QLabel("Alt-Tab integration extension is not installed.")
+            self.banner_label = QLabel("Alt-Tab integration extension not installed.")
             self.banner_layout.addWidget(self.banner_label, stretch=1)
             
-            install_btn = QPushButton("Install Extension")
+            install_btn = QPushButton("Install")
             install_btn.setStyleSheet("""
                 QPushButton {
                     background-color: #d08770;
-                    color: #2e3440;
+                    color: #1e1e1e;
                     font-weight: bold;
                     font-size: 11px;
-                    border-radius: 3px;
-                    padding: 2px 6px;
+                    border-radius: 4px;
+                    padding: 3px 8px;
                 }
                 QPushButton:hover {
                     background-color: #ebcb8b;
@@ -155,6 +213,7 @@ class MainWindow(QMainWindow):
             self.banner_layout.addWidget(install_btn)
             
             dismiss_btn = QPushButton("✕")
+            dismiss_btn.setObjectName("DismissBtn")
             dismiss_btn.setFixedSize(22, 22)
             dismiss_btn.setToolTip("Dismiss Banner")
             dismiss_btn.clicked.connect(self._dismiss_banner)
@@ -167,12 +226,12 @@ class MainWindow(QMainWindow):
                 QWidget#BannerWidget {
                     background-color: #3b3322;
                     border: 1px solid #d08770;
-                    border-radius: 4px;
+                    border-radius: 6px;
                 }
                 QLabel {
                     color: #ebcb8b;
                     font-size: 11px;
-                    font-weight: bold;
+                    font-weight: 600;
                     background: transparent;
                 }
                 QPushButton#DismissBtn {
@@ -180,7 +239,7 @@ class MainWindow(QMainWindow):
                     border: none;
                     color: #ebcb8b;
                     font-weight: bold;
-                    font-size: 13px;
+                    font-size: 12px;
                 }
                 QPushButton#DismissBtn:hover {
                     background: rgba(255, 255, 255, 0.15);
@@ -189,47 +248,171 @@ class MainWindow(QMainWindow):
             """)
             layout.addWidget(self.banner_widget)
         
-        # Top buttons
+        # Header Action Buttons
         btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(8)
+
         btn_emerg = QPushButton("+ Sticky")
+        btn_emerg.setObjectName("BtnSticky")
         btn_emerg.setToolTip("Create a persistent, always-on-top Sticky Note")
         btn_emerg.clicked.connect(lambda: self._note_manager.create_note("emergency"))
         
         btn_norm = QPushButton("+ Note")
+        btn_norm.setObjectName("BtnNote")
         btn_norm.setToolTip("Create a standard Sticky Note")
         btn_norm.clicked.connect(lambda: self._note_manager.create_note("normal"))
         
         btn_defaults = QPushButton("⚙ Settings")
+        btn_defaults.setObjectName("BtnSettings")
         btn_defaults.setToolTip("Configure default note styling, fonts, and dimensions")
         btn_defaults.clicked.connect(self._open_default_settings)
 
-        btn_layout.addWidget(btn_emerg)
-        btn_layout.addWidget(btn_norm)
+        btn_layout.addWidget(btn_emerg, stretch=1)
+        btn_layout.addWidget(btn_norm, stretch=1)
         btn_layout.addWidget(btn_defaults)
         layout.addLayout(btn_layout)
         
-        # List
+        # Search Filter Bar
+        self.search_input = QLineEdit()
+        self.search_input.setObjectName("SearchInput")
+        self.search_input.setPlaceholderText("🔍 Search notes...")
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.textChanged.connect(self._on_search_changed)
+        layout.addWidget(self.search_input)
+
+        # Note Cards List
         self.list_widget = QListWidget()
+        self.list_widget.setObjectName("NoteList")
+        self.list_widget.setSpacing(6)
         self.list_widget.itemClicked.connect(self._on_item_clicked)
-        layout.addWidget(self.list_widget)
+        layout.addWidget(self.list_widget, stretch=1)
         
-        # Bottom buttons
-        bottom_btn_layout = QHBoxLayout()
-        btn_show_all = QPushButton("Show All Notes")
+        # Empty State Label
+        self.empty_label = QLabel("No notes yet.\nClick + Sticky or + Note above to create one.")
+        self.empty_label.setObjectName("EmptyLabel")
+        self.empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.empty_label.hide()
+        layout.addWidget(self.empty_label)
+
+        # Bottom Bar (Note Count & Show/Hide Controls)
+        bottom_bar = QHBoxLayout()
+        bottom_bar.setContentsMargins(2, 2, 2, 2)
+
+        self.count_label = QLabel("0 notes")
+        self.count_label.setObjectName("CountLabel")
+        bottom_bar.addWidget(self.count_label)
+        
+        bottom_bar.addStretch()
+
+        btn_show_all = QPushButton("Show All")
+        btn_show_all.setObjectName("BtnPill")
         btn_show_all.clicked.connect(self._note_manager.show_all)
         
-        btn_hide_all = QPushButton("Hide All Notes")
+        btn_hide_all = QPushButton("Hide All")
+        btn_hide_all.setObjectName("BtnPill")
         btn_hide_all.clicked.connect(self._note_manager.hide_all)
         
-        bottom_btn_layout.addWidget(btn_show_all)
-        bottom_btn_layout.addWidget(btn_hide_all)
-        layout.addLayout(bottom_btn_layout)
+        bottom_bar.addWidget(btn_show_all)
+        bottom_bar.addWidget(btn_hide_all)
+        layout.addLayout(bottom_bar)
         
-        # Connect signals
+        # Apply Global Styling
+        self._apply_theme()
+
+        # Connect NoteManager signals
         self._note_manager.note_created.connect(self._on_note_created)
         self._note_manager.note_deleted.connect(self._on_note_deleted)
         self._note_manager.note_updated.connect(self._on_note_updated)
         
+    def _apply_theme(self):
+        self.setStyleSheet("""
+            QMainWindow, QWidget#CentralWidget {
+                background-color: #1e1e1e;
+                color: #ffffff;
+            }
+            QPushButton#BtnSticky {
+                background-color: #3b2c1a;
+                color: #e67e22;
+                border: 1px solid #d08770;
+                border-radius: 6px;
+                font-weight: 600;
+                font-size: 12px;
+                padding: 7px 12px;
+            }
+            QPushButton#BtnSticky:hover {
+                background-color: #4a3821;
+                border: 1px solid #ebcb8b;
+            }
+            QPushButton#BtnNote {
+                background-color: #1a3324;
+                color: #2ec27e;
+                border: 1px solid #27ae60;
+                border-radius: 6px;
+                font-weight: 600;
+                font-size: 12px;
+                padding: 7px 12px;
+            }
+            QPushButton#BtnNote:hover {
+                background-color: #244733;
+                border: 1px solid #2ecc71;
+            }
+            QPushButton#BtnSettings {
+                background-color: #2a2a2a;
+                color: #e0e0e0;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 6px;
+                font-size: 12px;
+                padding: 7px 10px;
+            }
+            QPushButton#BtnSettings:hover {
+                background-color: #383838;
+                color: #ffffff;
+            }
+            QLineEdit#SearchInput {
+                background-color: #282828;
+                color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 8px;
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            QLineEdit#SearchInput:focus {
+                border: 1px solid #3584e4;
+                background-color: #2c2c2c;
+            }
+            QListWidget#NoteList {
+                background: transparent;
+                border: none;
+                outline: none;
+            }
+            QListWidget#NoteList::item {
+                background: transparent;
+                border: none;
+                padding: 0px;
+            }
+            QLabel#EmptyLabel {
+                color: #777777;
+                font-size: 12px;
+                padding: 30px;
+            }
+            QLabel#CountLabel {
+                color: #777777;
+                font-size: 11px;
+            }
+            QPushButton#BtnPill {
+                background-color: #282828;
+                color: #b0b0b0;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 5px;
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+            QPushButton#BtnPill:hover {
+                background-color: #363636;
+                color: #ffffff;
+            }
+        """)
+
     def _dismiss_banner(self):
         if hasattr(self, 'banner_widget'):
             self.banner_widget.hide()
@@ -241,12 +424,13 @@ class MainWindow(QMainWindow):
             self._dismiss_banner()
         
     def _on_note_created(self, model):
-        item = QListWidgetItem(self.list_widget)
+        item = QListWidgetItem()
         item.setData(Qt.ItemDataRole.UserRole, model.id)
         widget = NoteListItem(model, self._note_manager)
         item.setSizeHint(widget.sizeHint())
         self.list_widget.addItem(item)
         self.list_widget.setItemWidget(item, widget)
+        self._update_list_state()
         
     def _on_note_deleted(self, note_id):
         for i in range(self.list_widget.count()):
@@ -254,6 +438,7 @@ class MainWindow(QMainWindow):
             if item.data(Qt.ItemDataRole.UserRole) == note_id:
                 self.list_widget.takeItem(i)
                 break
+        self._update_list_state()
                 
     def _on_note_updated(self, model):
         for i in range(self.list_widget.count()):
@@ -262,7 +447,45 @@ class MainWindow(QMainWindow):
                 widget = self.list_widget.itemWidget(item)
                 if widget:
                     widget.update_model(model)
+                    item.setSizeHint(widget.sizeHint())
                 break
+        self._update_list_state()
+
+    def _on_search_changed(self, text: str):
+        query = text.strip()
+        visible_count = 0
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            widget = self.list_widget.itemWidget(item)
+            if widget:
+                matches = widget.matches_query(query)
+                item.setHidden(not matches)
+                if matches:
+                    visible_count += 1
+        self._update_list_state()
+
+    def _update_list_state(self):
+        total = self.list_widget.count()
+        query = self.search_input.text().strip()
+        
+        visible = sum(1 for i in range(total) if not self.list_widget.item(i).isHidden())
+        
+        if query:
+            self.count_label.setText(f"{visible} of {total} notes")
+        else:
+            self.count_label.setText(f"{total} note{'s' if total != 1 else ''}")
+
+        if total == 0:
+            self.empty_label.setText("No notes yet.\nClick + Sticky or + Note above to create one.")
+            self.empty_label.show()
+            self.list_widget.hide()
+        elif visible == 0 and query:
+            self.empty_label.setText(f"No notes matching \"{query}\".")
+            self.empty_label.show()
+            self.list_widget.hide()
+        else:
+            self.empty_label.hide()
+            self.list_widget.show()
                 
     def _on_item_clicked(self, item):
         note_id = item.data(Qt.ItemDataRole.UserRole)
