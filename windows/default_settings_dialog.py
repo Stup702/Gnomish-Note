@@ -85,11 +85,19 @@ class DefaultSettingsDialog(QDialog):
         # 6. GNOME Shell Integration Extension
         ext_layout = QHBoxLayout()
         ext_layout.addWidget(QLabel("Alt-Tab Extension:"))
+        
         self.btn_ext = QPushButton()
         self.btn_ext.setFixedHeight(26)
-        self._update_extension_btn()
         self.btn_ext.clicked.connect(self._on_extension_btn_clicked)
         ext_layout.addWidget(self.btn_ext, stretch=1)
+
+        self.btn_ext_uninstall = QPushButton("🗑 Uninstall")
+        self.btn_ext_uninstall.setFixedHeight(26)
+        self.btn_ext_uninstall.setStyleSheet("color: #e74c3c; font-weight: bold; font-size: 11px;")
+        self.btn_ext_uninstall.clicked.connect(self._on_extension_uninstall_clicked)
+        ext_layout.addWidget(self.btn_ext_uninstall)
+
+        self._update_extension_btn()
         layout.addLayout(ext_layout)
 
         layout.addStretch()
@@ -155,9 +163,11 @@ class DefaultSettingsDialog(QDialog):
         if extension_installer.is_extension_installed():
             self.btn_ext.setText("✔ Installed (Reinstall)")
             self.btn_ext.setStyleSheet("color: #27ae60; font-weight: bold; font-size: 11px;")
+            self.btn_ext_uninstall.show()
         else:
             self.btn_ext.setText("⚡ Install Extension")
             self.btn_ext.setStyleSheet("color: #d08770; font-weight: bold; font-size: 11px;")
+            self.btn_ext_uninstall.hide()
 
     def _on_extension_btn_clicked(self):
         import extension_installer
@@ -165,6 +175,11 @@ class DefaultSettingsDialog(QDialog):
         self._update_extension_btn()
         if self.parent() and hasattr(self.parent(), '_dismiss_banner') and extension_installer.is_extension_installed():
             self.parent()._dismiss_banner()
+
+    def _on_extension_uninstall_clicked(self):
+        import extension_installer
+        extension_installer.uninstall_extension(self)
+        self._update_extension_btn()
 
     def _on_save(self):
         settings_manager.save_default_settings({
