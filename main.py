@@ -57,14 +57,52 @@ def acquire_lock():
     except (IOError, OSError):
         return False
 
+def ensure_desktop_entry():
+    home = os.path.expanduser("~")
+    desktop_dir = os.path.join(home, ".local", "share", "applications")
+    icon_dir = os.path.join(home, ".local", "share", "icons", "hicolor", "512x512", "apps")
+    os.makedirs(desktop_dir, exist_ok=True)
+    os.makedirs(icon_dir, exist_ok=True)
+    
+    png_src = os.path.join(os.path.dirname(__file__), "icons", "gnomish-note-v4.png")
+    png_dst = os.path.join(icon_dir, "gnomish-note-v4.png")
+    if os.path.exists(png_src):
+        import shutil
+        shutil.copyfile(png_src, png_dst)
+        
+    desktop_file = os.path.join(desktop_dir, "gnomish-note.desktop")
+    main_py = os.path.abspath(os.path.join(os.path.dirname(__file__), "main.py"))
+    
+    content = f"""[Desktop Entry]
+Name=Gnomish Note
+GenericName=Sticky Notes
+Comment=Sticky & Standard Notes for GNOME Linux
+Exec=python3 {main_py}
+Icon={png_src}
+Terminal=false
+Type=Application
+Categories=Utility;TextEditor;
+StartupWMClass=gnomish-note
+"""
+    with open(desktop_file, "w") as f:
+        f.write(content)
+
 def main():
     if not acquire_lock():
         print("Application is already running. Exiting.")
         sys.exit(1)
 
+    ensure_desktop_entry()
+
     app = QApplication(sys.argv)
-    app.setApplicationName("gnome-sticky-notes")
-    app.setDesktopFileName("gnome-sticky-notes")
+    app.setApplicationName("gnomish-note")
+    app.setDesktopFileName("gnomish-note.desktop")
+    
+    icon_path = os.path.join(os.path.dirname(__file__), "icons", "gnomish-note-v4.png")
+    if os.path.exists(icon_path):
+        from PyQt6.QtGui import QIcon
+        app.setWindowIcon(QIcon(icon_path))
+        
     app.aboutToQuit.connect(cleanup)
 
     note_manager = NoteManager()
@@ -76,14 +114,7 @@ def main():
     if not extension_installer.is_extension_installed():
         extension_installer.install_and_enable_extension(main_window)
 
-    if tray_icon.isSystemTrayAvailable():
-        tray_icon.show()
-    else:
-        QMessageBox.warning(
-            main_window,
-            "System Tray Unavailable",
-            "The system tray is not available. Please install the 'AppIndicator and KStatusNotifierItem Support' GNOME extension to see the tray icon. The app is fully functional from the Main Window."
-        )
+    tray_icon.show()
 
     main_window.show()
 

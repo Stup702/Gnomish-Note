@@ -23,8 +23,10 @@ class EmergencyNoteWindow(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
         from widgets.note_content import NoteContentWidget
+        from widgets.frameless_resizer import FramelessResizer
         self._content_widget = NoteContentWidget(self, self._model, self._note_manager)
         self._layout.addWidget(self._content_widget)
+        self._resizer = FramelessResizer(self, self._model, self._note_manager)
 
     def mousePressEvent(self, event):
         if hasattr(self, '_content_widget') and hasattr(self._content_widget, 'text_edit'):

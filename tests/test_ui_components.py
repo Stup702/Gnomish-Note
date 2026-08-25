@@ -59,6 +59,44 @@ class TestUIComponents(unittest.TestCase):
         self.assertEqual(target.size().width(), 320)
         self.assertEqual(target.size().height(), 370)
 
+    def test_frameless_resizer_zones_and_cursors(self):
+        from widgets.frameless_resizer import FramelessResizer, EDGE_TOP, EDGE_BOTTOM, EDGE_LEFT, EDGE_RIGHT
+        from PyQt6.QtCore import QPoint
+        m = NoteModel(width=280, height=320)
+        target = QWidget()
+        target.resize(280, 320)
+        resizer = FramelessResizer(target, m, self.nm, margin=6)
+
+        # 4 Corners
+        self.assertEqual(resizer.get_zone_at(QPoint(2, 2)), EDGE_TOP | EDGE_LEFT)
+        self.assertEqual(resizer.get_cursor_for_zone(EDGE_TOP | EDGE_LEFT), Qt.CursorShape.SizeFDiagCursor)
+
+        self.assertEqual(resizer.get_zone_at(QPoint(278, 2)), EDGE_TOP | EDGE_RIGHT)
+        self.assertEqual(resizer.get_cursor_for_zone(EDGE_TOP | EDGE_RIGHT), Qt.CursorShape.SizeBDiagCursor)
+
+        self.assertEqual(resizer.get_zone_at(QPoint(2, 318)), EDGE_BOTTOM | EDGE_LEFT)
+        self.assertEqual(resizer.get_cursor_for_zone(EDGE_BOTTOM | EDGE_LEFT), Qt.CursorShape.SizeBDiagCursor)
+
+        self.assertEqual(resizer.get_zone_at(QPoint(278, 318)), EDGE_BOTTOM | EDGE_RIGHT)
+        self.assertEqual(resizer.get_cursor_for_zone(EDGE_BOTTOM | EDGE_RIGHT), Qt.CursorShape.SizeFDiagCursor)
+
+        # 4 Edges
+        self.assertEqual(resizer.get_zone_at(QPoint(140, 2)), EDGE_TOP)
+        self.assertEqual(resizer.get_cursor_for_zone(EDGE_TOP), Qt.CursorShape.SizeVerCursor)
+
+        self.assertEqual(resizer.get_zone_at(QPoint(140, 318)), EDGE_BOTTOM)
+        self.assertEqual(resizer.get_cursor_for_zone(EDGE_BOTTOM), Qt.CursorShape.SizeVerCursor)
+
+        self.assertEqual(resizer.get_zone_at(QPoint(2, 160)), EDGE_LEFT)
+        self.assertEqual(resizer.get_cursor_for_zone(EDGE_LEFT), Qt.CursorShape.SizeHorCursor)
+
+        self.assertEqual(resizer.get_zone_at(QPoint(278, 160)), EDGE_RIGHT)
+        self.assertEqual(resizer.get_cursor_for_zone(EDGE_RIGHT), Qt.CursorShape.SizeHorCursor)
+
+        # Interior
+        self.assertEqual(resizer.get_zone_at(QPoint(140, 160)), 0)
+        self.assertIsNone(resizer.get_cursor_for_zone(0))
+
     def test_settings_popover_escape_dismiss(self):
         m = NoteModel()
         win = QWidget()
