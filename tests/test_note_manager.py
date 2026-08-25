@@ -78,5 +78,30 @@ class TestNoteManager(unittest.TestCase):
         self.assertEqual(updated2.note_type, NOTE_TYPE_NORMAL)
         self.assertIsInstance(self.nm._windows[note.id], NormalNoteWindow)
 
+    def test_bring_to_front_and_z_index_sorting(self):
+        n1 = self.nm.create_note(NOTE_TYPE_NORMAL)
+        n2 = self.nm.create_note(NOTE_TYPE_NORMAL)
+        n3 = self.nm.create_note(NOTE_TYPE_NORMAL)
+
+        self.assertGreater(n2.z_index, n1.z_index)
+        self.assertGreater(n3.z_index, n2.z_index)
+
+        # Bring n1 to front
+        self.nm.bring_to_front(n1.id)
+        self.assertGreater(self.nm.get_note(n1.id).z_index, self.nm.get_note(n3.id).z_index)
+
+        # Calling bring_to_front again on already top note should not churn z_index
+        prev_z = self.nm.get_note(n1.id).z_index
+        self.nm.bring_to_front(n1.id)
+        self.assertEqual(self.nm.get_note(n1.id).z_index, prev_z)
+
+        # Persist and reload
+        storage.save_notes(list(self.nm._notes.values()))
+        nm2 = NoteManager()
+        nm2.load_all()
+        # Verify notes are loaded in ascending order with n1 having highest z_index
+        self.assertEqual(nm2.get_note(n1.id).z_index, prev_z)
+        nm2.close_all_windows()
+
 if __name__ == "__main__":
     unittest.main()

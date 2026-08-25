@@ -33,13 +33,17 @@ class ResizeHandle(QWidget):
             self._resizing = True
             self._start_global = event.globalPosition().toPoint()
             self._start_size = self._target.size()
+            self._target.raise_()
+            self._target.activateWindow()
+            if hasattr(self._nm, 'bring_to_front') and hasattr(self, '_model') and self._model:
+                self._nm.bring_to_front(self._model.id)
             event.accept()
 
     def mouseMoveEvent(self, event):
         if self._resizing and self._start_global is not None and self._start_size is not None:
             delta = event.globalPosition().toPoint() - self._start_global
-            new_w = max(200, self._start_size.width() + delta.x())
-            new_h = max(150, self._start_size.height() + delta.y())
+            new_w = max(100, self._start_size.width() + delta.x())
+            new_h = max(60, self._start_size.height() + delta.y())
             self._target.resize(new_w, new_h)
             event.accept()
 

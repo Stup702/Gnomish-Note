@@ -7,6 +7,11 @@ from .settings_popover import SettingsPopover
 
 class NoteTextEdit(QTextEdit):
     """Custom QTextEdit with interactive checklists, right-click context menu, and Smart Enter."""
+    def __init__(self, model=None, note_manager=None, parent=None):
+        super().__init__(parent)
+        self._model = model
+        self._nm = note_manager
+
     def toggle_checklist(self):
         cursor = self.textCursor()
         cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
@@ -139,6 +144,13 @@ class NoteTextEdit(QTextEdit):
         super().keyPressEvent(event)
 
     def mousePressEvent(self, event):
+        win = self.window()
+        if win:
+            win.raise_()
+            win.activateWindow()
+        if hasattr(self, '_nm') and self._nm and hasattr(self, '_model') and self._model:
+            self._nm.bring_to_front(self._model.id)
+
         if event.button() == Qt.MouseButton.LeftButton:
             cursor = self.cursorForPosition(event.pos())
             block = cursor.block()
@@ -188,7 +200,7 @@ class NoteContentWidget(QWidget):
         self._text_timer.timeout.connect(self._save_text)
         
         self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(4, 4, 4, 4)
+        self.layout.setContentsMargins(2, 2, 2, 2)
         self.layout.setSpacing(0)
         
         self.container = QWidget()
@@ -201,7 +213,7 @@ class NoteContentWidget(QWidget):
         self.top_bar = TopBar(self._model, self._nm, self.settings_popover)
         container_layout.addWidget(self.top_bar)
         
-        self.text_edit = NoteTextEdit()
+        self.text_edit = NoteTextEdit(self._model, self._nm)
         self.text_edit.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.text_edit.setPlaceholderText("Write your note here...")
         self.text_edit.setStyleSheet("QTextEdit { border: none; background: transparent; }")

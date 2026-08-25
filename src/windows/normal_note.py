@@ -14,7 +14,7 @@ class NormalNoteWindow(QWidget):
             Qt.WindowType.FramelessWindowHint
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setMinimumSize(200, 150)
+        self.setMinimumSize(100, 60)
         self.setGeometry(self._model.pos_x, self._model.pos_y, self._model.width, self._model.height)
         self.setWindowOpacity(getattr(self._model, "opacity", 1.0))
 
@@ -27,6 +27,15 @@ class NormalNoteWindow(QWidget):
         self._layout.addWidget(self._content_widget)
         self._resizer = FramelessResizer(self, self._model, self._note_manager)
 
+    def mousePressEvent(self, event):
+        if hasattr(self, '_content_widget') and hasattr(self._content_widget, 'text_edit'):
+            self._content_widget.text_edit.setFocus()
+        self.raise_()
+        self.activateWindow()
+        if hasattr(self, '_note_manager') and hasattr(self._note_manager, 'bring_to_front'):
+            self._note_manager.bring_to_front(self._model.id)
+        super().mousePressEvent(event)
+
     def toggle_collapsed(self):
         if self._model.collapsed:
             # Expand
@@ -36,8 +45,8 @@ class NormalNoteWindow(QWidget):
                 self._content_widget.top_bar.set_collapsed_mode(False)
             if hasattr(self._content_widget, 'resize_handle') and self._content_widget.resize_handle:
                 self._content_widget.resize_handle.show()
-            saved_h = getattr(self, '_saved_height', max(150, self._model.height))
-            self.setMinimumSize(200, 150)
+            saved_h = getattr(self, '_saved_height', max(60, self._model.height))
+            self.setMinimumSize(100, 60)
             self.resize(self.width(), saved_h)
             self._model.height = saved_h
             self._note_manager.update_note(self._model)
@@ -50,8 +59,8 @@ class NormalNoteWindow(QWidget):
                 self._content_widget.top_bar.set_collapsed_mode(True)
             if hasattr(self._content_widget, 'resize_handle') and self._content_widget.resize_handle:
                 self._content_widget.resize_handle.hide()
-            min_h = self._content_widget.top_bar.sizeHint().height() + 8
-            self.setMinimumSize(200, min_h)
+            min_h = self._content_widget.top_bar.sizeHint().height() + 6
+            self.setMinimumSize(100, min_h)
             self.resize(self.width(), min_h)
             self._note_manager.update_note(self._model)
 
@@ -65,8 +74,8 @@ class NormalNoteWindow(QWidget):
                 self._content_widget.top_bar.set_collapsed_mode(True)
             if hasattr(self._content_widget, 'resize_handle') and self._content_widget.resize_handle:
                 self._content_widget.resize_handle.hide()
-            min_h = self._content_widget.top_bar.sizeHint().height() + 8
-            self.setMinimumSize(200, min_h)
+            min_h = self._content_widget.top_bar.sizeHint().height() + 6
+            self.setMinimumSize(100, min_h)
             self.resize(self._model.width, min_h)
         else:
             if hasattr(self._content_widget, 'top_bar'):
