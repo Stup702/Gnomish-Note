@@ -37,7 +37,7 @@ def enable_autostart() -> bool:
 Name=Gnomish Note
 GenericName=Sticky Notes
 Comment=Sticky & Standard Notes for GNOME Linux
-Exec=python3 {main_py}
+Exec=python3 {main_py} --autostart
 Icon={icon_path}
 Terminal=false
 Type=Application

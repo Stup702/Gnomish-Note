@@ -126,7 +126,10 @@ def main():
 
     tray_icon.show()
 
-    main_window.show()
+    # If launched on system startup via autostart or with --minimized/--hidden, keep main dashboard hidden
+    start_hidden = any(arg in sys.argv for arg in ("--autostart", "--minimized", "--hidden", "-m"))
+    if not start_hidden:
+        main_window.show()
 
     def on_quit():
         if hasattr(note_manager, '_notes'):
