@@ -1,11 +1,12 @@
 from PyQt6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QFontComboBox, QSpinBox, QPushButton, QColorDialog,
+    QSpinBox, QPushButton, QColorDialog,
     QMessageBox
 )
 from PyQt6.QtGui import QColor, QFont
 from PyQt6.QtCore import Qt
 from persistence import settings_manager
+from widgets.font_selector import CuratedFontComboBox
 
 class DefaultSettingsDialog(QDialog):
     def __init__(self, parent=None):
@@ -40,10 +41,10 @@ class DefaultSettingsDialog(QDialog):
         lbl_font.setObjectName("RowLabel")
         row_font.addWidget(lbl_font)
         row_font.addStretch()
-        self.font_combo = QFontComboBox()
+        self.font_combo = CuratedFontComboBox()
         self.font_combo.setObjectName("DarkInput")
         self.font_combo.setFixedWidth(180)
-        self.font_combo.setCurrentFont(QFont(self._current_settings["font_family"]))
+        self.font_combo.set_current_family(self._current_settings["font_family"])
         row_font.addWidget(self.font_combo)
         card1_layout.addLayout(row_font)
 
@@ -53,12 +54,28 @@ class DefaultSettingsDialog(QDialog):
         lbl_size.setObjectName("RowLabel")
         row_size.addWidget(lbl_size)
         row_size.addStretch()
+
+        btn_minus = QPushButton("−")
+        btn_minus.setObjectName("BtnStepper")
+        btn_minus.setFixedSize(24, 24)
+        btn_minus.clicked.connect(self._decrease_font_size)
+        row_size.addWidget(btn_minus)
+
         self.size_spin = QSpinBox()
         self.size_spin.setObjectName("DarkInput")
         self.size_spin.setRange(6, 72)
-        self.size_spin.setFixedWidth(90)
+        self.size_spin.setFixedWidth(46)
+        self.size_spin.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
+        self.size_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.size_spin.setValue(self._current_settings["font_size"])
         row_size.addWidget(self.size_spin)
+
+        btn_plus = QPushButton("+")
+        btn_plus.setObjectName("BtnStepper")
+        btn_plus.setFixedSize(24, 24)
+        btn_plus.clicked.connect(self._increase_font_size)
+        row_size.addWidget(btn_plus)
+
         card1_layout.addLayout(row_size)
 
         # Row 3: Note Background Color
@@ -99,7 +116,9 @@ class DefaultSettingsDialog(QDialog):
         self.width_spin = QSpinBox()
         self.width_spin.setObjectName("DarkInput")
         self.width_spin.setRange(150, 1920)
-        self.width_spin.setFixedWidth(75)
+        self.width_spin.setFixedWidth(64)
+        self.width_spin.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
+        self.width_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.width_spin.setValue(self._current_settings["width"])
         row_dim.addWidget(self.width_spin)
         
@@ -110,7 +129,9 @@ class DefaultSettingsDialog(QDialog):
         self.height_spin = QSpinBox()
         self.height_spin.setObjectName("DarkInput")
         self.height_spin.setRange(100, 1080)
-        self.height_spin.setFixedWidth(75)
+        self.height_spin.setFixedWidth(64)
+        self.height_spin.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
+        self.height_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.height_spin.setValue(self._current_settings["height"])
         row_dim.addWidget(self.height_spin)
         
@@ -205,7 +226,7 @@ class DefaultSettingsDialog(QDialog):
                 font-weight: 500;
                 background: transparent;
             }
-            QFontComboBox#DarkInput, QSpinBox#DarkInput {
+            QComboBox#DarkInput, QSpinBox#DarkInput {
                 background-color: #323232;
                 color: #ffffff;
                 border: 1px solid rgba(255, 255, 255, 0.1);
@@ -213,12 +234,28 @@ class DefaultSettingsDialog(QDialog):
                 padding: 4px 6px;
                 font-size: 12px;
             }
-            QFontComboBox#DarkInput:focus, QSpinBox#DarkInput:focus {
+            QSpinBox#DarkInput::up-button, QSpinBox#DarkInput::down-button {
+                width: 0px;
+                height: 0px;
+                border: none;
+            }
+            QComboBox#DarkInput:focus, QSpinBox#DarkInput:focus {
                 border: 1px solid #3584e4;
                 background-color: #383838;
             }
-            QFontComboBox#DarkInput::drop-down {
+            QComboBox#DarkInput::drop-down {
                 border: none;
+            }
+            QPushButton#BtnStepper {
+                background-color: #323232;
+                color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 13px;
+            }
+            QPushButton#BtnStepper:hover {
+                background-color: #404040;
             }
             QPushButton#BtnExtAction {
                 background-color: #323232;
@@ -281,6 +318,16 @@ class DefaultSettingsDialog(QDialog):
             }
         """)
 
+    def _decrease_font_size(self):
+        cur = self.size_spin.value()
+        if cur > self.size_spin.minimum():
+            self.size_spin.setValue(cur - 1)
+
+    def _increase_font_size(self):
+        cur = self.size_spin.value()
+        if cur < self.size_spin.maximum():
+            self.size_spin.setValue(cur + 1)
+
     def _update_color_btn(self, color_hex):
         self._selected_color = color_hex
         self.btn_color.setStyleSheet(f"""
@@ -328,7 +375,7 @@ class DefaultSettingsDialog(QDialog):
     def _on_reset(self):
         settings_manager.reset_default_settings()
         self._current_settings = settings_manager.get_default_settings()
-        self.font_combo.setCurrentFont(QFont(self._current_settings["font_family"]))
+        self.font_combo.set_current_family(self._current_settings["font_family"])
         self.size_spin.setValue(self._current_settings["font_size"])
         self._update_color_btn(self._current_settings["color"])
         self._update_font_color_btn(self._current_settings["font_color"])
@@ -360,7 +407,7 @@ class DefaultSettingsDialog(QDialog):
 
     def _on_save(self):
         settings_manager.save_default_settings({
-            "font_family": self.font_combo.currentFont().family(),
+            "font_family": self.font_combo.current_family(),
             "font_size": self.size_spin.value(),
             "color": self._selected_color,
             "font_color": self._selected_font_color,
