@@ -77,13 +77,49 @@ class TopBar(QWidget):
         # Make the top bar a drag target with a hand cursor
         self.setCursor(Qt.CursorShape.SizeAllCursor)
 
-        # Connect note_updated signal to live-update title if note is rolled up
+        # Connect note_updated signal to live-update title and color if note is updated
         if hasattr(self._nm, 'note_updated'):
             self._nm.note_updated.connect(self._on_note_updated)
+
+        self._font_color = getattr(self._model, "font_color", "#333333")
+        self.set_font_color(self._font_color)
+
+    def set_font_color(self, hex_color: str):
+        self._font_color = hex_color
+        self.collapsed_title_label.setStyleSheet(f"color: {hex_color}; font-weight: bold; font-size: 11px; padding-left: 4px;")
+        self.btn_settings.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                border: none;
+                border-radius: 9px;
+                color: {hex_color};
+                font-size: 10px;
+            }}
+            QPushButton:hover {{
+                background: rgba(128, 128, 128, 0.25);
+                color: {hex_color};
+            }}
+        """)
+        if self.btn_close:
+            self.btn_close.setStyleSheet(f"""
+                QPushButton {{
+                    background: transparent;
+                    border: none;
+                    border-radius: 9px;
+                    color: {hex_color};
+                    font-size: 10px;
+                }}
+                QPushButton:hover {{
+                    background: rgba(231, 76, 60, 0.25);
+                    color: #e74c3c;
+                }}
+            """)
 
     def _on_note_updated(self, model):
         if model.id == self._model.id:
             self._model = model
+            if getattr(model, "font_color", None) and model.font_color != self._font_color:
+                self.set_font_color(model.font_color)
             if getattr(self._model, "collapsed", False):
                 self.set_collapsed_mode(True)
 
