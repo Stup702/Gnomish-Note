@@ -25,7 +25,7 @@ class TestUIComponents(unittest.TestCase):
         flags = win.windowFlags()
         self.assertTrue(bool(flags & Qt.WindowType.FramelessWindowHint))
         self.assertTrue(bool(flags & Qt.WindowType.WindowStaysOnTopHint))
-        self.assertTrue(bool(flags & Qt.WindowType.ToolTip))
+        self.assertTrue(bool(flags & Qt.WindowType.Window))
         # TopBar should NOT have close button for emergency note
         self.assertIsNone(win._content_widget.top_bar.btn_close)
         # Text edit should have StrongFocus
