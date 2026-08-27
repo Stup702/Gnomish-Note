@@ -14,14 +14,18 @@ signal.signal(signal.SIGTERM, signal.SIG_DFL)
 if os.environ.get('WAYLAND_DISPLAY') and 'QT_QPA_PLATFORM' not in os.environ:
     os.environ['QT_QPA_PLATFORM'] = 'xcb'
 
+SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
+
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from PyQt6.QtCore import Qt
 
-from note_manager import NoteManager
+from core.note_manager import NoteManager
 from windows.main_window import MainWindow
 from tray.system_tray import SystemTrayIcon
+from core import extension_installer
 import persistence.storage as storage
-import extension_installer
 
 import atexit
 

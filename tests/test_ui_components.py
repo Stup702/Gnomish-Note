@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QApplication, QWidget
 from PyQt6.QtCore import Qt, QPointF
 from PyQt6.QtGui import QKeyEvent, QMouseEvent, QFont
 from models.note_model import NoteModel, NOTE_TYPE_EMERGENCY, NOTE_TYPE_NORMAL
-from note_manager import NoteManager
+from core.note_manager import NoteManager
 from windows.emergency_note import EmergencyNoteWindow
 from windows.normal_note import NormalNoteWindow
 from widgets.settings_popover import SettingsPopover

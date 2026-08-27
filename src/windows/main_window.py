@@ -5,8 +5,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QTextDocumentFragment
-import sys
-import extension_installer
+from core import extension_installer
 
 class NoteListItem(QWidget):
     def __init__(self, model, note_manager):

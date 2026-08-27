@@ -2,7 +2,7 @@ import unittest
 import sys
 from PyQt6.QtWidgets import QApplication
 from persistence import settings_manager
-from note_manager import NoteManager
+from core.note_manager import NoteManager
 from windows.default_settings_dialog import DefaultSettingsDialog
 from models.note_model import NOTE_TYPE_NORMAL
 

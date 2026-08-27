@@ -3,9 +3,9 @@ import sys
 from PyQt6.QtWidgets import QApplication, QTextEdit
 from PyQt6.QtGui import QTextDocumentFragment
 from models.note_model import NoteModel, NOTE_TYPE_EMERGENCY, NOTE_TYPE_NORMAL
-from note_manager import NoteManager
+from core.note_manager import NoteManager
 from windows.main_window import MainWindow, NoteListItem
-import extension_installer
+from core import extension_installer
 
 app = QApplication.instance() or QApplication(sys.argv)
 
