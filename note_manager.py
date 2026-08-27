@@ -61,11 +61,38 @@ class NoteManager(QObject):
             color=defaults.get("color", "#fdf5c9"),
             font_color=defaults.get("font_color", "#333333"),
             width=defaults.get("width", 280),
-            height=defaults.get("height", 320)
+            height=defaults.get("height", 320),
+            opacity=defaults.get("opacity", 1.0)
         )
         self._notes[model.id] = model
         self._create_window_for_model(model)
         self.note_created.emit(model)
+        self.update_note(model)
+        return model
+
+    def toggle_note_type(self, note_id: str) -> NoteModel | None:
+        model = self._notes.get(note_id)
+        if not model:
+            return None
+
+        # Capture current window position and geometry before closing
+        old_window = self._windows.pop(note_id, None)
+        if old_window:
+            model.pos_x = old_window.pos().x()
+            model.pos_y = old_window.pos().y()
+            model.width = old_window.width()
+            model.height = old_window.height()
+            old_window.close()
+            old_window.deleteLater()
+
+        # Switch type
+        if model.note_type == NOTE_TYPE_EMERGENCY:
+            model.note_type = NOTE_TYPE_NORMAL
+        else:
+            model.note_type = NOTE_TYPE_EMERGENCY
+
+        # Re-create window with new type
+        self._create_window_for_model(model)
         self.update_note(model)
         return model
 

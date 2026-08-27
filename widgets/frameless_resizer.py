@@ -101,75 +101,81 @@ class FramelessResizer(QObject):
             self._current_cursor = None
 
     def eventFilter(self, watched, event):
-        if not isinstance(watched, QWidget):
+        try:
+            if not isinstance(watched, QWidget):
+                return super().eventFilter(watched, event)
+
+            if watched != self._target and not self._target.isAncestorOf(watched):
+                return super().eventFilter(watched, event)
+        except (RuntimeError, Exception):
             return super().eventFilter(watched, event)
 
-        if watched != self._target and not self._target.isAncestorOf(watched):
-            return super().eventFilter(watched, event)
+        try:
+            event_type = event.type()
 
-        event_type = event.type()
-
-        # Handle mouse movement
-        if event_type in (QEvent.Type.MouseMove, QEvent.Type.HoverMove):
-            if self._active_zone != EDGE_NONE:
-                self._handle_resize(event)
-                return True
-            else:
-                if hasattr(event, 'globalPosition'):
-                    global_pt = event.globalPosition().toPoint()
+            # Handle mouse movement
+            if event_type in (QEvent.Type.MouseMove, QEvent.Type.HoverMove):
+                if self._active_zone != EDGE_NONE:
+                    self._handle_resize(event)
+                    return True
                 else:
-                    global_pt = watched.mapToGlobal(event.pos())
+                    if hasattr(event, 'globalPosition'):
+                        global_pt = event.globalPosition().toPoint()
+                    else:
+                        global_pt = watched.mapToGlobal(event.pos())
 
-                pos_in_target = self._target.mapFromGlobal(global_pt)
-                zone = self.get_zone_at(pos_in_target)
-                cursor = self.get_cursor_for_zone(zone)
+                    pos_in_target = self._target.mapFromGlobal(global_pt)
+                    zone = self.get_zone_at(pos_in_target)
+                    cursor = self.get_cursor_for_zone(zone)
 
-                if cursor is not None:
-                    self._set_override_cursor(cursor)
-                else:
+                    if cursor is not None:
+                        self._set_override_cursor(cursor)
+                    else:
+                        self._restore_override_cursor()
+
+            # Handle mouse press
+            elif event_type == QEvent.Type.MouseButtonPress:
+                if event.button() == Qt.MouseButton.LeftButton:
+                    if hasattr(event, 'globalPosition'):
+                        global_pt = event.globalPosition().toPoint()
+                    else:
+                        global_pt = watched.mapToGlobal(event.pos())
+
+                    pos_in_target = self._target.mapFromGlobal(global_pt)
+                    zone = self.get_zone_at(pos_in_target)
+                    if zone != EDGE_NONE:
+                        self._active_zone = zone
+                        self._start_global = global_pt
+                        self._start_geometry = self._target.geometry()
+                        return True
+
+            # Handle mouse release
+            elif event_type == QEvent.Type.MouseButtonRelease:
+                if self._active_zone != EDGE_NONE:
+                    self._active_zone = EDGE_NONE
+                    self._start_global = None
+                    self._start_geometry = None
+                    self._model.pos_x = self._target.pos().x()
+                    self._model.pos_y = self._target.pos().y()
+                    self._model.width = self._target.width()
+                    self._model.height = self._target.height()
+                    self._nm.update_note(self._model)
                     self._restore_override_cursor()
-
-        # Handle mouse press
-        elif event_type == QEvent.Type.MouseButtonPress:
-            if event.button() == Qt.MouseButton.LeftButton:
-                if hasattr(event, 'globalPosition'):
-                    global_pt = event.globalPosition().toPoint()
-                else:
-                    global_pt = watched.mapToGlobal(event.pos())
-
-                pos_in_target = self._target.mapFromGlobal(global_pt)
-                zone = self.get_zone_at(pos_in_target)
-                if zone != EDGE_NONE:
-                    self._active_zone = zone
-                    self._start_global = global_pt
-                    self._start_geometry = self._target.geometry()
                     return True
 
-        # Handle mouse release
-        elif event_type == QEvent.Type.MouseButtonRelease:
-            if self._active_zone != EDGE_NONE:
-                self._active_zone = EDGE_NONE
-                self._start_global = None
-                self._start_geometry = None
-                self._model.pos_x = self._target.pos().x()
-                self._model.pos_y = self._target.pos().y()
-                self._model.width = self._target.width()
-                self._model.height = self._target.height()
-                self._nm.update_note(self._model)
-                self._restore_override_cursor()
-                return True
+            # Handle leave or hide
+            elif event_type in (QEvent.Type.Leave, QEvent.Type.Hide):
+                if self._active_zone == EDGE_NONE:
+                    self._restore_override_cursor()
 
-        # Handle leave or hide
-        elif event_type in (QEvent.Type.Leave, QEvent.Type.Hide):
-            if self._active_zone == EDGE_NONE:
-                self._restore_override_cursor()
-
-        # Dynamic child discovery
-        elif event_type == QEvent.Type.ChildAdded:
-            child = getattr(event, 'child', lambda: None)()
-            if isinstance(child, QWidget):
-                child.setMouseTracking(True)
-                child.installEventFilter(self)
+            # Dynamic child discovery
+            elif event_type == QEvent.Type.ChildAdded:
+                child = getattr(event, 'child', lambda: None)()
+                if isinstance(child, QWidget):
+                    child.setMouseTracking(True)
+                    child.installEventFilter(self)
+        except (RuntimeError, Exception):
+            return super().eventFilter(watched, event)
 
         return super().eventFilter(watched, event)
 

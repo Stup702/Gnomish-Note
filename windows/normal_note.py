@@ -16,6 +16,7 @@ class NormalNoteWindow(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setMinimumSize(200, 150)
         self.setGeometry(self._model.pos_x, self._model.pos_y, self._model.width, self._model.height)
+        self.setWindowOpacity(getattr(self._model, "opacity", 1.0))
 
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)

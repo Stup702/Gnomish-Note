@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (
     QFrame, QVBoxLayout, QHBoxLayout, QLabel,
     QSpinBox, QPushButton, QColorDialog,
-    QApplication, QWidget
+    QApplication, QWidget, QSlider
 )
 from PyQt6.QtGui import QColor, QFont
 from PyQt6.QtCore import Qt, QTimer, QEvent
@@ -72,6 +72,23 @@ class SettingsPopover(QFrame):
             QPushButton#BtnCustomColor:hover {
                 background-color: #444444;
                 color: #ffffff;
+            }
+            #SettingsPopover QSlider::groove:horizontal {
+                height: 4px;
+                background: #444444;
+                border-radius: 2px;
+            }
+            #SettingsPopover QSlider::sub-page:horizontal {
+                background: #3584e4;
+                border-radius: 2px;
+            }
+            #SettingsPopover QSlider::handle:horizontal {
+                background: #ffffff;
+                border: 1px solid rgba(0, 0, 0, 0.2);
+                width: 14px;
+                margin-top: -5px;
+                margin-bottom: -5px;
+                border-radius: 7px;
             }
         """)
 
@@ -191,6 +208,23 @@ class SettingsPopover(QFrame):
         font_color_layout.addWidget(self.btn_font_color)
         layout.addLayout(font_color_layout)
 
+        # 5. Opacity Slider (40% to 100%)
+        opacity_layout = QHBoxLayout()
+        opacity_layout.addWidget(QLabel("Opacity:"))
+        
+        current_op_val = int(round(getattr(self._model, "opacity", 1.0) * 100))
+        self.lbl_opacity_val = QLabel(f"{current_op_val}%")
+        self.lbl_opacity_val.setStyleSheet("color: #aaaaaa; font-size: 11px; font-weight: bold; min-width: 32px;")
+        
+        self.opacity_slider = QSlider(Qt.Orientation.Horizontal)
+        self.opacity_slider.setRange(40, 100)
+        self.opacity_slider.setValue(current_op_val)
+        self.opacity_slider.valueChanged.connect(self._on_opacity_changed)
+
+        opacity_layout.addWidget(self.opacity_slider, stretch=1)
+        opacity_layout.addWidget(self.lbl_opacity_val)
+        layout.addLayout(opacity_layout)
+
         self.setFixedWidth(240)
         self.adjustSize()
 
@@ -275,6 +309,14 @@ class SettingsPopover(QFrame):
                 self._nm.update_note(self._model)
         finally:
             self._color_dialog_active = False
+
+    # --- Opacity ---
+    def _on_opacity_changed(self, val: int):
+        self.lbl_opacity_val.setText(f"{val}%")
+        self._model.opacity = val / 100.0
+        if self._note_window:
+            self._note_window.setWindowOpacity(self._model.opacity)
+        self._nm.update_note(self._model)
 
     def showEvent(self, event):
         super().showEvent(event)

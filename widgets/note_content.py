@@ -66,6 +66,52 @@ class NoteTextEdit(QTextEdit):
             event.accept()
             return
 
+        # Markdown auto-formatting on Space
+        if event.key() == Qt.Key.Key_Space:
+            cursor = self.textCursor()
+            block = cursor.block()
+            block_text = block.text()
+            pos_in_block = cursor.positionInBlock()
+
+            # If user typed '# ' at start of block -> Header 1
+            if block_text == "#" and pos_in_block == 1:
+                cursor.beginEditBlock()
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+                cursor.removeSelectedText()
+                fmt = QTextCharFormat()
+                fmt.setFontWeight(QFont.Weight.Bold)
+                fmt.setFontPointSize(self.font().pointSize() + 4)
+                cursor.setBlockCharFormat(fmt)
+                cursor.endEditBlock()
+                event.accept()
+                return
+
+            # If user typed '## ' at start of block -> Header 2
+            if block_text == "##" and pos_in_block == 2:
+                cursor.beginEditBlock()
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+                cursor.removeSelectedText()
+                fmt = QTextCharFormat()
+                fmt.setFontWeight(QFont.Weight.Bold)
+                fmt.setFontPointSize(self.font().pointSize() + 2)
+                cursor.setBlockCharFormat(fmt)
+                cursor.endEditBlock()
+                event.accept()
+                return
+
+            # If user typed '- ' or '* ' at start of block -> convert to checklist ☐
+            if block_text in ("-", "*") and pos_in_block == 1:
+                cursor.beginEditBlock()
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+                cursor.removeSelectedText()
+                cursor.insertText("☐ ")
+                cursor.endEditBlock()
+                event.accept()
+                return
+
         # Smart Enter for checklists
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and not (event.modifiers() & Qt.KeyboardModifier.ShiftModifier):
             cursor = self.textCursor()

@@ -2,7 +2,7 @@ import unittest
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget
 from PyQt6.QtCore import Qt, QPointF
-from PyQt6.QtGui import QKeyEvent, QMouseEvent
+from PyQt6.QtGui import QKeyEvent, QMouseEvent, QFont
 from models.note_model import NoteModel, NOTE_TYPE_EMERGENCY, NOTE_TYPE_NORMAL
 from note_manager import NoteManager
 from windows.emergency_note import EmergencyNoteWindow
@@ -186,6 +186,43 @@ class TestUIComponents(unittest.TestCase):
         self.assertTrue(win._content_widget.text_edit.isVisible())
         self.assertFalse(win._content_widget.top_bar.collapsed_title_label.isVisible())
         self.assertEqual(win.height(), 320)
+        win.close()
+
+    def test_markdown_shortcuts(self):
+        m = NoteModel(note_type=NOTE_TYPE_NORMAL)
+        win = NormalNoteWindow(m, self.nm)
+        te = win._content_widget.text_edit
+
+        # 1. Test typing '- ' converts to '☐ '
+        te.setPlainText("-")
+        cursor = te.textCursor()
+        cursor.setPosition(1)
+        te.setTextCursor(cursor)
+        space_ev = QKeyEvent(QKeyEvent.Type.KeyPress, Qt.Key.Key_Space, Qt.KeyboardModifier.NoModifier, " ")
+        te.keyPressEvent(space_ev)
+        self.assertEqual(te.toPlainText(), "☐ ")
+
+        # 2. Test typing '# ' converts to Header 1
+        te.setPlainText("#")
+        cursor = te.textCursor()
+        cursor.setPosition(1)
+        te.setTextCursor(cursor)
+        te.keyPressEvent(space_ev)
+        self.assertEqual(te.toPlainText(), "")
+        self.assertEqual(te.currentCharFormat().fontWeight(), QFont.Weight.Bold)
+
+        win.close()
+
+    def test_opacity_slider(self):
+        m = NoteModel(note_type=NOTE_TYPE_NORMAL, opacity=1.0)
+        win = NormalNoteWindow(m, self.nm)
+        win.show()
+        pop = SettingsPopover(win, m, self.nm, win._content_widget)
+        
+        # Test opacity slider adjustment
+        pop.opacity_slider.setValue(70)
+        self.assertEqual(m.opacity, 0.7)
+        self.assertAlmostEqual(win.windowOpacity(), 0.7, places=2)
         win.close()
 
 if __name__ == "__main__":
