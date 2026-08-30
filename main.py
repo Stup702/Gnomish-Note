@@ -52,13 +52,28 @@ atexit.register(cleanup)
 def acquire_lock():
     global LOCK_FD
     os.makedirs(os.path.dirname(LOCK_FILE), exist_ok=True)
-    LOCK_FD = open(LOCK_FILE, 'w')
+    try:
+        LOCK_FD = open(LOCK_FILE, 'r+')
+    except FileNotFoundError:
+        LOCK_FD = open(LOCK_FILE, 'w+')
+
     try:
         fcntl.flock(LOCK_FD, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        LOCK_FD.seek(0)
+        LOCK_FD.truncate()
         LOCK_FD.write(str(os.getpid()))
         LOCK_FD.flush()
         return True
     except (IOError, OSError):
+        # Lock held by running instance — signal it to show dashboard
+        try:
+            LOCK_FD.seek(0)
+            pid_str = LOCK_FD.read().strip()
+            if pid_str.isdigit():
+                pid = int(pid_str)
+                os.kill(pid, signal.SIGUSR1)
+        except Exception:
+            pass
         return False
 
 def ensure_desktop_entry():
@@ -99,11 +114,12 @@ StartupWMClass=gnomish-note
 
 def main():
     if not acquire_lock():
-        print("Application is already running. Exiting.")
-        sys.exit(1)
+        print("Application is already running. Activated existing instance.")
+        sys.exit(0)
 
     ensure_desktop_entry()
 
+    from PyQt6.QtCore import QTimer
     app = QApplication(sys.argv)
     app.setApplicationName("gnomish-note")
     app.setDesktopFileName("gnomish-note.desktop")
@@ -126,9 +142,28 @@ def main():
 
     tray_icon.show()
 
-    # If launched on system startup via autostart or with --minimized/--hidden, keep main dashboard hidden
-    start_hidden = any(arg in sys.argv for arg in ("--autostart", "--minimized", "--hidden", "-m"))
-    if not start_hidden:
+    # Set up SIGUSR1 handler to show/focus dashboard when app is launched again
+    def handle_sigusr1(sig, frame):
+        QTimer.singleShot(0, lambda: (
+            main_window.showNormal() if main_window.isMinimized() else None,
+            main_window.show(),
+            main_window.raise_(),
+            main_window.activateWindow()
+        ))
+
+    try:
+        signal.signal(signal.SIGUSR1, handle_sigusr1)
+    except Exception:
+        pass
+
+    # Periodic timer to allow Python signal handling within the Qt event loop
+    sig_timer = QTimer()
+    sig_timer.start(500)
+    sig_timer.timeout.connect(lambda: None)
+
+    # By default on startup, keep main dashboard minimized / hidden to keep desktop clean.
+    # Only show immediately if explicitly requested via CLI flag.
+    if any(arg in sys.argv for arg in ("--show", "--dashboard", "-s")):
         main_window.show()
 
     def on_quit():
