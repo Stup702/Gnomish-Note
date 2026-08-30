@@ -262,5 +262,16 @@ class TestUIComponents(unittest.TestCase):
         te2.mousePressEvent(te_press_ev)
         self.assertGreater(self.nm.get_note(n2.id).z_index, self.nm.get_note(n1.id).z_index)
 
+    def test_top_bar_title_matches_font_color(self):
+        m = NoteModel(note_type=NOTE_TYPE_NORMAL, font_color="#ffffff", title="White Title")
+        win = NormalNoteWindow(m, self.nm)
+        tb = win._content_widget.top_bar
+        self.assertIn("#ffffff", tb.collapsed_title_label.styleSheet())
+
+        # Update color dynamically
+        win._content_widget.set_font_color("#f1c40f")
+        self.assertIn("#f1c40f", tb.collapsed_title_label.styleSheet())
+        win.close()
+
 if __name__ == "__main__":
     unittest.main()

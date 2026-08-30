@@ -245,6 +245,8 @@ class NoteContentWidget(QWidget):
         
         self.text_edit.setCurrentCharFormat(fmt)
         self.text_edit.setStyleSheet(f"QTextEdit {{ border: none; background: transparent; color: {hex_color}; }}")
+        if hasattr(self, 'top_bar') and self.top_bar:
+            self.top_bar.set_font_color(hex_color)
 
     def set_color(self, hex_color):
         border_color = "#f5a623" if self._model.note_type == "emergency" else "#e1d599"
