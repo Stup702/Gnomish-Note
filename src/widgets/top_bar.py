@@ -13,13 +13,13 @@ class TopBar(QWidget):
         layout.setContentsMargins(3, 2, 3, 2)
         layout.setSpacing(2)
 
-        self.badge = QLabel()
+        self.badge = QLabel("●")
         if self._model.note_type == "emergency":
-            self.badge.setText("● STICKY")
-            self.badge.setStyleSheet("background: rgba(230, 126, 34, 0.15); color: #d35400; font-weight: 700; font-size: 8.5px; border-radius: 3px; padding: 1px 3px;")
+            self.badge.setStyleSheet("color: #e67e22; font-size: 10px; padding: 0px 2px;")
+            self.badge.setToolTip("Sticky Note (Pinned / Always on Top)")
         else:
-            self.badge.setText("● NOTE")
-            self.badge.setStyleSheet("background: rgba(46, 204, 113, 0.15); color: #27ae60; font-weight: 700; font-size: 8.5px; border-radius: 3px; padding: 1px 3px;")
+            self.badge.setStyleSheet("color: #2ecc71; font-size: 10px; padding: 0px 2px;")
+            self.badge.setToolTip("Standard Note")
 
         layout.addWidget(self.badge)
 
