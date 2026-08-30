@@ -324,7 +324,8 @@ class SettingsPopover(QFrame):
         if app:
             app.installEventFilter(self)
         if self.parent():
-            self.move(self.parent().width() - self.width() - 10, 40)
+            target_x = max(0, self.parent().width() - self.width() - 6)
+            self.move(target_x, 30)
             self.raise_()
 
     def hideEvent(self, event):

@@ -16,7 +16,7 @@ class EmergencyNoteWindow(QWidget):
             Qt.WindowType.WindowStaysOnTopHint
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setMinimumSize(200, 150)
+        self.setMinimumSize(100, 60)
         self.setGeometry(self._model.pos_x, self._model.pos_y, self._model.width, self._model.height)
         self.setWindowOpacity(getattr(self._model, "opacity", 1.0))
 
@@ -32,7 +32,10 @@ class EmergencyNoteWindow(QWidget):
     def mousePressEvent(self, event):
         if hasattr(self, '_content_widget') and hasattr(self._content_widget, 'text_edit'):
             self._content_widget.text_edit.setFocus()
+        self.raise_()
         self.activateWindow()
+        if hasattr(self, '_note_manager') and hasattr(self._note_manager, 'bring_to_front'):
+            self._note_manager.bring_to_front(self._model.id)
         super().mousePressEvent(event)
 
     def showEvent(self, event):

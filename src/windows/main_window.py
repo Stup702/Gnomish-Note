@@ -131,15 +131,7 @@ class NoteListItem(QWidget):
         window = self._note_manager._windows.get(self._model.id)
         if not window:
             self._note_manager._create_window_for_model(self._model)
-            window = self._note_manager._windows.get(self._model.id)
-        if window:
-            self._model.minimized = False
-            self._note_manager.update_note(self._model)
-            if hasattr(window, 'isMinimized') and window.isMinimized():
-                window.showNormal()
-            window.show()
-            window.raise_()
-            window.activateWindow()
+        self._note_manager.bring_to_front(self._model.id)
 
     def _on_rename(self):
         from PyQt6.QtWidgets import QInputDialog
@@ -517,18 +509,10 @@ class MainWindow(QMainWindow):
         note_id = item.data(Qt.ItemDataRole.UserRole)
         model = self._note_manager.get_note(note_id)
         if model:
-            model.minimized = False
-            self._note_manager.update_note(model)
-        window = self._note_manager._windows.get(note_id)
-        if not window and model:
-            self._note_manager._create_window_for_model(model)
             window = self._note_manager._windows.get(note_id)
-        if window:
-            if hasattr(window, 'isMinimized') and window.isMinimized():
-                window.showNormal()
-            window.show()
-            window.raise_()
-            window.activateWindow()
+            if not window:
+                self._note_manager._create_window_for_model(model)
+            self._note_manager.bring_to_front(note_id)
             
     def _open_default_settings(self):
         from windows.default_settings_dialog import DefaultSettingsDialog

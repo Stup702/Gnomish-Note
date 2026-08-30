@@ -13,7 +13,7 @@ class FramelessResizer(QObject):
     Installs mouse tracking and 8-direction edge/corner resizing
     on any frameless QWidget and all its descendants.
     """
-    def __init__(self, target_window: QWidget, model, note_manager, margin: int = 8, corner_margin: int = 20, min_w: int = 200, min_h: int = 150):
+    def __init__(self, target_window: QWidget, model, note_manager, margin: int = 6, corner_margin: int = 16, min_w: int = 100, min_h: int = 60):
         super().__init__(target_window)
         self._target = target_window
         self._model = model
@@ -136,6 +136,11 @@ class FramelessResizer(QObject):
             # Handle mouse press
             elif event_type == QEvent.Type.MouseButtonPress:
                 if event.button() == Qt.MouseButton.LeftButton:
+                    self._target.raise_()
+                    self._target.activateWindow()
+                    if hasattr(self._nm, 'bring_to_front') and hasattr(self, '_model') and self._model:
+                        self._nm.bring_to_front(self._model.id)
+
                     if hasattr(event, 'globalPosition'):
                         global_pt = event.globalPosition().toPoint()
                     else:

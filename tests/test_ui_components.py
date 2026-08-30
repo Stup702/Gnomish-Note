@@ -1,7 +1,7 @@
 import unittest
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget
-from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtCore import Qt, QPoint, QPointF
 from PyQt6.QtGui import QKeyEvent, QMouseEvent, QFont
 from models.note_model import NoteModel, NOTE_TYPE_EMERGENCY, NOTE_TYPE_NORMAL
 from core.note_manager import NoteManager
@@ -224,6 +224,43 @@ class TestUIComponents(unittest.TestCase):
         self.assertEqual(m.opacity, 0.7)
         self.assertAlmostEqual(win.windowOpacity(), 0.7, places=2)
         win.close()
+
+    def test_ultra_compact_sizing_and_resizer(self):
+        m = NoteModel(note_type=NOTE_TYPE_NORMAL, width=100, height=60)
+        win = NormalNoteWindow(m, self.nm)
+        win.show()
+        self.assertEqual(win.minimumWidth(), 100)
+        self.assertEqual(win.minimumHeight(), 60)
+        
+        # Test resize handle clamping down to 100x60
+        rh = win._content_widget.resize_handle
+        rh._resizing = True
+        rh._start_global = QPoint(500, 500)
+        rh._start_size = win.size()
+        # Move mouse far up and left to test minimum clamp
+        move_ev = QMouseEvent(QMouseEvent.Type.MouseMove, QPointF(0, 0), QPointF(0, 0), Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+        rh.mouseMoveEvent(move_ev)
+        self.assertEqual(win.width(), 100)
+        self.assertEqual(win.height(), 60)
+        win.close()
+
+    def test_click_to_raise_on_components(self):
+        n1 = self.nm.create_note(NOTE_TYPE_NORMAL)
+        n2 = self.nm.create_note(NOTE_TYPE_NORMAL)
+        win1 = self.nm._windows[n1.id]
+
+        # Click top bar of note 1
+        top_bar = win1._content_widget.top_bar
+        press_ev = QMouseEvent(QMouseEvent.Type.MouseButtonPress, QPointF(10, 10), QPointF(100, 100), Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+        top_bar.mousePressEvent(press_ev)
+        self.assertGreater(self.nm.get_note(n1.id).z_index, self.nm.get_note(n2.id).z_index)
+
+        # Click text edit of note 2
+        win2 = self.nm._windows[n2.id]
+        te2 = win2._content_widget.text_edit
+        te_press_ev = QMouseEvent(QMouseEvent.Type.MouseButtonPress, QPointF(10, 10), QPointF(200, 200), Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+        te2.mousePressEvent(te_press_ev)
+        self.assertGreater(self.nm.get_note(n2.id).z_index, self.nm.get_note(n1.id).z_index)
 
 if __name__ == "__main__":
     unittest.main()

@@ -10,20 +10,21 @@ class TopBar(QWidget):
         self._drag_pos = None
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(5)
+        layout.setContentsMargins(3, 2, 3, 2)
+        layout.setSpacing(2)
 
         self.badge = QLabel()
         if self._model.note_type == "emergency":
             self.badge.setText("● STICKY")
-            self.badge.setStyleSheet("background: rgba(230, 126, 34, 0.15); color: #d35400; font-weight: 700; font-size: 10px; border-radius: 4px; padding: 2px 6px;")
+            self.badge.setStyleSheet("background: rgba(230, 126, 34, 0.15); color: #d35400; font-weight: 700; font-size: 8.5px; border-radius: 3px; padding: 1px 3px;")
         else:
             self.badge.setText("● NOTE")
-            self.badge.setStyleSheet("background: rgba(46, 204, 113, 0.15); color: #27ae60; font-weight: 700; font-size: 10px; border-radius: 4px; padding: 2px 6px;")
+            self.badge.setStyleSheet("background: rgba(46, 204, 113, 0.15); color: #27ae60; font-weight: 700; font-size: 8.5px; border-radius: 3px; padding: 1px 3px;")
 
         layout.addWidget(self.badge)
 
         self.collapsed_title_label = QLabel()
+        self.collapsed_title_label.setMinimumWidth(0)
         self.collapsed_title_label.setStyleSheet("color: #333333; font-weight: bold; font-size: 11px; padding-left: 4px;")
         self.collapsed_title_label.hide()
         layout.addWidget(self.collapsed_title_label, stretch=1)
@@ -31,15 +32,15 @@ class TopBar(QWidget):
         layout.addStretch()
 
         self.btn_settings = QPushButton("⚙")
-        self.btn_settings.setFixedSize(24, 24)
+        self.btn_settings.setFixedSize(18, 18)
         self.btn_settings.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_settings.setStyleSheet("""
             QPushButton {
                 background: transparent;
                 border: none;
-                border-radius: 12px;
+                border-radius: 9px;
                 color: rgba(0, 0, 0, 0.45);
-                font-size: 13px;
+                font-size: 10px;
             }
             QPushButton:hover {
                 background: rgba(0, 0, 0, 0.09);
@@ -53,15 +54,15 @@ class TopBar(QWidget):
         # Normal notes have a single close button here.
         if self._model.note_type != "emergency":
             self.btn_close = QPushButton("✕")
-            self.btn_close.setFixedSize(24, 24)
+            self.btn_close.setFixedSize(18, 18)
             self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
             self.btn_close.setStyleSheet("""
                 QPushButton {
                     background: transparent;
                     border: none;
-                    border-radius: 12px;
+                    border-radius: 9px;
                     color: rgba(0, 0, 0, 0.45);
-                    font-size: 13px;
+                    font-size: 10px;
                 }
                 QPushButton:hover {
                     background: rgba(231, 76, 60, 0.18);
@@ -114,6 +115,10 @@ class TopBar(QWidget):
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self._drag_pos = event.globalPosition().toPoint() - self.window().pos()
+            self.window().raise_()
+            self.window().activateWindow()
+            if hasattr(self._nm, 'bring_to_front'):
+                self._nm.bring_to_front(self._model.id)
             event.accept()
 
     def mouseMoveEvent(self, event):

@@ -23,6 +23,7 @@ class NoteManager(QObject):
         screen_geom = QApplication.primaryScreen().availableGeometry()
         
         loaded_notes = storage.load_notes()
+        loaded_notes.sort(key=lambda n: getattr(n, 'z_index', 0))
         for note in loaded_notes:
             # Only reset if note is completely outside all monitor bounds
             if (note.pos_x < -note.width + 30 or
@@ -54,6 +55,7 @@ class NoteManager(QObject):
         from persistence import settings_manager
         defaults = settings_manager.get_default_settings()
         
+        max_z = max((n.z_index for n in self._notes.values()), default=0)
         model = NoteModel(
             note_type=note_type,
             font_family=defaults.get("font_family", "Sans Serif"),
@@ -62,13 +64,36 @@ class NoteManager(QObject):
             font_color=defaults.get("font_color", "#333333"),
             width=defaults.get("width", 280),
             height=defaults.get("height", 320),
-            opacity=defaults.get("opacity", 1.0)
+            opacity=defaults.get("opacity", 1.0),
+            z_index=max_z + 1
         )
         self._notes[model.id] = model
         self._create_window_for_model(model)
         self.note_created.emit(model)
         self.update_note(model)
         return model
+
+    def bring_to_front(self, note_id: str):
+        model = self._notes.get(note_id)
+        if not model:
+            return
+
+        other_z = [n.z_index for n in self._notes.values() if n.id != note_id]
+        max_other = max(other_z, default=0) if other_z else 0
+        if model.z_index <= max_other:
+            model.z_index = max_other + 1
+            self.update_note(model)
+
+        window = self._windows.get(note_id)
+        if window:
+            if model.minimized:
+                model.minimized = False
+                self.update_note(model)
+                window.show()
+            if hasattr(window, 'isMinimized') and window.isMinimized():
+                window.showNormal()
+            window.raise_()
+            window.activateWindow()
 
     def toggle_note_type(self, note_id: str) -> NoteModel | None:
         model = self._notes.get(note_id)
@@ -93,6 +118,7 @@ class NoteManager(QObject):
 
         # Re-create window with new type
         self._create_window_for_model(model)
+        self.bring_to_front(note_id)
         self.update_note(model)
         return model
 
@@ -116,7 +142,8 @@ class NoteManager(QObject):
         self._save_timer.start(500)
 
     def show_all(self):
-        for model in self._notes.values():
+        sorted_notes = sorted(self._notes.values(), key=lambda n: getattr(n, 'z_index', 0))
+        for model in sorted_notes:
             model.minimized = False
             self.update_note(model)
             window = self._windows.get(model.id)

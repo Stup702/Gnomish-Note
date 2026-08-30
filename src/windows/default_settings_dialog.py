@@ -115,7 +115,7 @@ class DefaultSettingsDialog(QDialog):
         
         self.width_spin = QSpinBox()
         self.width_spin.setObjectName("DarkInput")
-        self.width_spin.setRange(150, 1920)
+        self.width_spin.setRange(100, 1920)
         self.width_spin.setFixedWidth(64)
         self.width_spin.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
         self.width_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -128,7 +128,7 @@ class DefaultSettingsDialog(QDialog):
         
         self.height_spin = QSpinBox()
         self.height_spin.setObjectName("DarkInput")
-        self.height_spin.setRange(100, 1080)
+        self.height_spin.setRange(60, 1080)
         self.height_spin.setFixedWidth(64)
         self.height_spin.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
         self.height_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
