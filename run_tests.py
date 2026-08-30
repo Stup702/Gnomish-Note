@@ -11,6 +11,15 @@ SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
+import tempfile
+from pathlib import Path
+import persistence.storage as storage
+
+# Double-guard test isolation: globally sandbox persistence storage
+_GLOBAL_TEST_TMP = tempfile.TemporaryDirectory()
+storage.DATA_DIR = Path(_GLOBAL_TEST_TMP.name)
+storage.DATA_FILE = storage.DATA_DIR / "notes.json"
+
 def run_suite():
     print("=" * 60)
     print(" Gnomish Note — Automated Test Suite")
