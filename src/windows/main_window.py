@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QListWidget, QListWidgetItem, QLabel,
-    QLineEdit, QMessageBox
+    QLineEdit, QMessageBox, QSizePolicy
 )
-from PyQt6.QtCore import Qt, QSettings
+from PyQt6.QtCore import Qt, QSettings, QSize
 from PyQt6.QtGui import QTextDocumentFragment
 from core import extension_installer
 
@@ -30,9 +30,11 @@ class NoteListItem(QWidget):
         
         self.title_label = QLabel()
         self.title_label.setObjectName("CardTitle")
+        self.title_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         
         self.preview_label = QLabel()
         self.preview_label.setObjectName("CardPreview")
+        self.preview_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         
         text_layout.addWidget(self.title_label)
         text_layout.addWidget(self.preview_label)
@@ -40,12 +42,17 @@ class NoteListItem(QWidget):
         
         self._update_text()
         
-        # Type toggle button (Sticky <-> Standard)
+        # Actions button cluster (Toggle Type, Rename, Delete)
+        actions_layout = QHBoxLayout()
+        actions_layout.setContentsMargins(0, 0, 0, 0)
+        actions_layout.setSpacing(4)
+        actions_layout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+
         self.toggle_type_btn = QPushButton()
         self.toggle_type_btn.setObjectName("CardActionBtn")
         self.toggle_type_btn.setFixedSize(26, 26)
         self.toggle_type_btn.clicked.connect(self._on_toggle_type)
-        main_layout.addWidget(self.toggle_type_btn)
+        actions_layout.addWidget(self.toggle_type_btn)
         
         self._update_badge()
 
@@ -55,7 +62,7 @@ class NoteListItem(QWidget):
         rename_btn.setToolTip("Rename Note")
         rename_btn.setFixedSize(26, 26)
         rename_btn.clicked.connect(self._on_rename)
-        main_layout.addWidget(rename_btn)
+        actions_layout.addWidget(rename_btn)
 
         # Delete button
         del_btn = QPushButton("🗑")
@@ -63,7 +70,9 @@ class NoteListItem(QWidget):
         del_btn.setToolTip("Delete Note")
         del_btn.setFixedSize(26, 26)
         del_btn.clicked.connect(self._on_delete)
-        main_layout.addWidget(del_btn)
+        actions_layout.addWidget(del_btn)
+
+        main_layout.addLayout(actions_layout)
 
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setStyleSheet("""
@@ -179,6 +188,9 @@ class NoteListItem(QWidget):
         clean_text = QTextDocumentFragment.fromHtml(content).toPlainText().lower()
         return q in title or q in clean_text
 
+    def sizeHint(self):
+        return QSize(self.width(), 54)
+
 
 class MainWindow(QMainWindow):
     def __init__(self, note_manager):
@@ -186,8 +198,8 @@ class MainWindow(QMainWindow):
         self._note_manager = note_manager
         
         self.setWindowTitle("Gnomish Note")
-        self.resize(380, 520)
-        self.setMinimumSize(320, 400)
+        self.resize(460, 540)
+        self.setMinimumSize(400, 420)
         
         import os
         from PyQt6.QtGui import QIcon
@@ -302,6 +314,7 @@ class MainWindow(QMainWindow):
         self.list_widget = QListWidget()
         self.list_widget.setObjectName("NoteList")
         self.list_widget.setSpacing(6)
+        self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.list_widget.itemClicked.connect(self._on_item_clicked)
         layout.addWidget(self.list_widget, stretch=1)
         
