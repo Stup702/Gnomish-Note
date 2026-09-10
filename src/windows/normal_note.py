@@ -45,14 +45,28 @@ class NormalNoteWindow(QWidget):
                 self._content_widget.top_bar.set_collapsed_mode(False)
             if hasattr(self._content_widget, 'resize_handle') and self._content_widget.resize_handle:
                 self._content_widget.resize_handle.show()
-            saved_h = getattr(self, '_saved_height', max(60, self._model.height))
+
+            # Restore expanded height: check persisted expanded_height, then saved_height, fallback to 320
+            target_h = getattr(self._model, 'expanded_height', 0)
+            if target_h < 100:
+                target_h = getattr(self, '_saved_height', 0)
+            if target_h < 100:
+                target_h = max(self._model.height, 320)
+
             self.setMinimumSize(100, 60)
-            self.resize(self.width(), saved_h)
-            self._model.height = saved_h
+            self.resize(self.width(), target_h)
+            self._model.height = target_h
+            self._model.expanded_height = target_h
             self._note_manager.update_note(self._model)
         else:
             # Collapse
-            self._saved_height = self.height()
+            current_h = self.height()
+            if current_h >= 100:
+                self._saved_height = current_h
+                self._model.expanded_height = current_h
+            elif getattr(self._model, 'expanded_height', 0) < 100:
+                self._model.expanded_height = max(self._model.height, 320)
+
             self._model.collapsed = True
             self._content_widget.text_edit.hide()
             if hasattr(self._content_widget, 'top_bar'):
@@ -80,7 +94,8 @@ class NormalNoteWindow(QWidget):
         else:
             if hasattr(self._content_widget, 'top_bar'):
                 self._content_widget.top_bar.set_collapsed_mode(False)
-            self.resize(self._model.width, self._model.height)
+            target_h = self._model.expanded_height if getattr(self._model, 'expanded_height', 0) >= 100 else self._model.height
+            self.resize(self._model.width, target_h)
             if hasattr(self, '_content_widget') and self._content_widget.resize_handle:
                 rh = self._content_widget.resize_handle
                 rh.move(self.width() - rh.width() - 2, self.height() - rh.height() - 2)
@@ -110,7 +125,9 @@ class NormalNoteWindow(QWidget):
         if getattr(self, '_restoring', False):
             return
         self._model.width = event.size().width()
-        self._model.height = event.size().height()
+        if not self._model.collapsed:
+            self._model.height = event.size().height()
+            self._model.expanded_height = event.size().height()
         self._note_manager.update_note(self._model)
 
     def closeEvent(self, event):

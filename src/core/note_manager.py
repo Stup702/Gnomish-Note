@@ -106,7 +106,9 @@ class NoteManager(QObject):
             model.pos_x = old_window.pos().x()
             model.pos_y = old_window.pos().y()
             model.width = old_window.width()
-            model.height = old_window.height()
+            if not getattr(model, 'collapsed', False):
+                model.height = old_window.height()
+                model.expanded_height = old_window.height()
             old_window.close()
             old_window.deleteLater()
 

@@ -29,15 +29,25 @@ def enable_autostart() -> bool:
         autostart_dir = get_autostart_dir()
         autostart_dir.mkdir(parents=True, exist_ok=True)
 
-        project_root = Path(__file__).resolve().parent.parent.parent
-        main_py = project_root / "main.py"
-        icon_path = project_root / "icons" / "gnomish-note-v4.png"
+        import sys
+        from core.paths import get_app_icon_path
+
+        if getattr(sys, 'frozen', False):
+            exec_cmd = f"{sys.executable} --autostart"
+            icon_path = os.path.expanduser("~/.local/share/icons/hicolor/512x512/apps/gnomish-note.png")
+            if not os.path.exists(icon_path):
+                icon_path = get_app_icon_path()
+        else:
+            project_root = Path(__file__).resolve().parent.parent.parent
+            main_py = project_root / "main.py"
+            exec_cmd = f"python3 {main_py} --autostart"
+            icon_path = get_app_icon_path()
 
         content = f"""[Desktop Entry]
 Name=Gnomish Note
 GenericName=Sticky Notes
 Comment=Sticky & Standard Notes for GNOME Linux
-Exec=python3 {main_py} --autostart
+Exec={exec_cmd}
 Icon={icon_path}
 Terminal=false
 Type=Application
