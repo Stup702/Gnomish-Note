@@ -83,21 +83,29 @@ def ensure_desktop_entry():
     os.makedirs(desktop_dir, exist_ok=True)
     os.makedirs(icon_dir, exist_ok=True)
     
-    png_src = os.path.join(os.path.dirname(__file__), "icons", "gnomish-note-v4.png")
-    png_dst = os.path.join(icon_dir, "gnomish-note-v4.png")
+    from core.paths import get_app_icon_path
+    png_src = get_app_icon_path()
+    png_dst = os.path.join(icon_dir, "gnomish-note.png")
     if os.path.exists(png_src):
         import shutil
         shutil.copyfile(png_src, png_dst)
+        desktop_icon = png_dst
+    else:
+        desktop_icon = "gnomish-note"
         
     desktop_file = os.path.join(desktop_dir, "gnomish-note.desktop")
-    main_py = os.path.abspath(os.path.join(os.path.dirname(__file__), "main.py"))
+    if getattr(sys, 'frozen', False):
+        exec_cmd = sys.executable
+    else:
+        main_py = os.path.abspath(os.path.join(os.path.dirname(__file__), "main.py"))
+        exec_cmd = f"python3 {main_py}"
     
     content = f"""[Desktop Entry]
 Name=Gnomish Note
 GenericName=Sticky Notes
 Comment=Sticky & Standard Notes for GNOME Linux
-Exec=python3 {main_py}
-Icon={png_src}
+Exec={exec_cmd}
+Icon={desktop_icon}
 Terminal=false
 Type=Application
 Categories=Utility;TextEditor;
@@ -124,7 +132,8 @@ def main():
     app.setApplicationName("gnomish-note")
     app.setDesktopFileName("gnomish-note.desktop")
     
-    icon_path = os.path.join(os.path.dirname(__file__), "icons", "gnomish-note-v4.png")
+    from core.paths import get_app_icon_path
+    icon_path = get_app_icon_path()
     if os.path.exists(icon_path):
         from PyQt6.QtGui import QIcon
         app.setWindowIcon(QIcon(icon_path))
@@ -161,9 +170,13 @@ def main():
     sig_timer.start(500)
     sig_timer.timeout.connect(lambda: None)
 
-    # By default on startup, keep main dashboard minimized / hidden to keep desktop clean.
-    # Only show immediately if explicitly requested via CLI flag.
-    if any(arg in sys.argv for arg in ("--show", "--dashboard", "-s")):
+    # On autostart: show the main window minimized so it appears in the taskbar,
+    # but doesn't pop up over your desktop. Clicking its taskbar entry unminimizes it.
+    # On manual launch: show the dashboard immediately.
+    is_autostart = "--autostart" in sys.argv
+    if is_autostart:
+        main_window.showMinimized()
+    else:
         main_window.show()
 
     def on_quit():

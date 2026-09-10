@@ -23,6 +23,7 @@ class NoteModel:
     collapsed: bool = False
     opacity: float = 1.0
     z_index: int = 0
+    expanded_height: int = 0
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
     def to_dict(self) -> dict:
@@ -47,5 +48,6 @@ class NoteModel:
             collapsed=d.get("collapsed", False),
             opacity=float(d.get("opacity", 1.0)),
             z_index=int(d.get("z_index", 0)),
+            expanded_height=int(d.get("expanded_height", 0)),
             created_at=d.get("created_at", datetime.now().isoformat())
         )

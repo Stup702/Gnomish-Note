@@ -189,7 +189,7 @@ class NoteListItem(QWidget):
         return q in title or q in clean_text
 
     def sizeHint(self):
-        return QSize(self.width(), 54)
+        return QSize(0, 54)
 
 
 class MainWindow(QMainWindow):
@@ -203,7 +203,8 @@ class MainWindow(QMainWindow):
         
         import os
         from PyQt6.QtGui import QIcon
-        icon_path = os.path.join(os.path.dirname(__file__), "..", "icons", "gnomish-note-v4.png")
+        from core.paths import get_app_icon_path
+        icon_path = get_app_icon_path()
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
         

@@ -8,7 +8,8 @@ class SystemTrayIcon(QSystemTrayIcon):
         self._main_window = main_window
         self._note_manager = note_manager
 
-        icon_path = os.path.join(os.path.dirname(__file__), "..", "icons", "gnomish-note-v4.png")
+        from core.paths import get_app_icon_path
+        icon_path = get_app_icon_path()
         if os.path.exists(icon_path):
             icon = QIcon(icon_path)
         else:

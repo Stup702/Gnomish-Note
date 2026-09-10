@@ -200,6 +200,29 @@ class TestUIComponents(unittest.TestCase):
         self.assertEqual(win.height(), 320)
         win.close()
 
+    def test_rolled_up_note_unroll_preserves_size_across_sessions(self):
+        m = NoteModel(note_type=NOTE_TYPE_NORMAL, width=300, height=450)
+        win = NormalNoteWindow(m, self.nm)
+        win.show()
+        win.toggle_collapsed()
+        self.assertTrue(m.collapsed)
+        self.assertEqual(m.expanded_height, 450)
+        win.close()
+
+        # Simulate fresh session loading from serialized dict
+        d = m.to_dict()
+        m_restored = NoteModel.from_dict(d)
+        win_restored = NormalNoteWindow(m_restored, self.nm)
+        win_restored.show()
+        self.assertTrue(m_restored.collapsed)
+
+        # Unroll
+        win_restored.toggle_collapsed()
+        self.assertFalse(m_restored.collapsed)
+        self.assertEqual(win_restored.height(), 450)
+        self.assertEqual(m_restored.height, 450)
+        win_restored.close()
+
     def test_markdown_shortcuts(self):
         m = NoteModel(note_type=NOTE_TYPE_NORMAL)
         win = NormalNoteWindow(m, self.nm)
