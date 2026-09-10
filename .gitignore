@@ -8,3 +8,7 @@ env/
 venv/
 *.log
 .system_generated/
+build/
+.clj-kondo
+.build-venv
+.lsp
