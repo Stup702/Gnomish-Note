@@ -4,7 +4,7 @@
 
 # Gnomish Note
 
-A fast, lightweight sticky note and desktop scratchpad built for GNOME on Linux (Wayland and X11) that can make the notes stay on top, and hide them from alt-tab switcher.
+A fast, lightweight sticky note and desktop scratchpad built for GNOME on Linux (Wayland via XWayland and X11) that keeps notes always on top and out of the Alt-Tab switcher.
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![PyQt6](https://img.shields.io/badge/GUI-PyQt6-41CD52?style=flat-square&logo=qt&logoColor=white)](https://riverbankcomputing.com/software/pyqt/)

@@ -9,8 +9,9 @@ import atexit
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
-# Force XCB (XWayland) platform so WindowStaysOnTopHint and ToolTip stickiness work natively on GNOME
-# (Matches setup_systemd.sh in Personal_Permanent_Sticky_Timer)
+# Force XCB (XWayland) under Wayland compositors:
+# Pure Wayland protocol does not allow client applications to position themselves or control z-order.
+# Running via XWayland enables WindowStaysOnTopHint and multi-workspace pinning to function reliably.
 if os.environ.get('WAYLAND_DISPLAY') and 'QT_QPA_PLATFORM' not in os.environ:
     os.environ['QT_QPA_PLATFORM'] = 'xcb'
 

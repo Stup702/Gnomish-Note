@@ -19,17 +19,26 @@ class NoteManager(QObject):
         self._save_timer.timeout.connect(self._do_save)
 
     def load_all(self):
-        from PyQt6.QtWidgets import QApplication
-        screen_geom = QApplication.primaryScreen().availableGeometry()
+        from PyQt6.QtGui import QGuiApplication
+        from PyQt6.QtCore import QRect
+        screens = QGuiApplication.screens()
         
         loaded_notes = storage.load_notes()
         loaded_notes.sort(key=lambda n: getattr(n, 'z_index', 0))
         for note in loaded_notes:
-            # Only reset if note is completely outside all monitor bounds
-            if (note.pos_x < -note.width + 30 or
-                note.pos_x > screen_geom.width() - 30 or
-                note.pos_y < -note.height + 30 or
-                note.pos_y > screen_geom.height() - 30):
+            # Keep note position if it has at least 30x30px overlap with any connected monitor
+            note_w = max(note.width, 100)
+            note_h = max(note.height, 60)
+            note_rect = QRect(note.pos_x, note.pos_y, note_w, note_h)
+            
+            is_visible = False
+            for screen in screens:
+                intersection = screen.availableGeometry().intersected(note_rect)
+                if intersection.width() >= 30 and intersection.height() >= 30:
+                    is_visible = True
+                    break
+            
+            if not is_visible:
                 note.pos_x, note.pos_y = 100, 100
                 
             self._notes[note.id] = note

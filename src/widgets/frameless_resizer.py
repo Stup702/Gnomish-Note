@@ -86,18 +86,13 @@ class FramelessResizer(QObject):
         return None
 
     def _set_override_cursor(self, cursor):
-        if not self._cursor_overridden:
-            QGuiApplication.setOverrideCursor(cursor)
-            self._cursor_overridden = True
-            self._current_cursor = cursor
-        elif self._current_cursor != cursor:
-            QGuiApplication.changeOverrideCursor(cursor)
+        if self._current_cursor != cursor:
+            self._target.setCursor(cursor)
             self._current_cursor = cursor
 
     def _restore_override_cursor(self):
-        if self._cursor_overridden:
-            QGuiApplication.restoreOverrideCursor()
-            self._cursor_overridden = False
+        if self._current_cursor is not None:
+            self._target.unsetCursor()
             self._current_cursor = None
 
     def eventFilter(self, watched, event):

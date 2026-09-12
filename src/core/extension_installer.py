@@ -30,12 +30,17 @@ export default class NoteAppIntegrationExtension extends Extension {
     enable() {
         this._injectionManager = new InjectionManager();
 
-        // Hide any note window — those whose title starts with '[Note]'
+        // Hide any note window — those whose title starts with '[Note]' AND belongs to Gnomish Note
         // The Main Window title is 'Sticky Notes' — no [Note] prefix — stays visible.
         const isNoteWindow = (window) => {
             if (!window) return false;
             const title = window.get_title();
-            return title !== null && title.startsWith('[Note]');
+            if (!title || !title.startsWith('[Note]')) return false;
+            const wmClass = (window.get_wm_class() || '').toLowerCase();
+            const wmInstance = (window.get_wm_class_instance() || '').toLowerCase();
+            return wmClass.includes('gnomish') || wmClass.includes('note') ||
+                   wmInstance.includes('gnomish') || wmInstance.includes('note') ||
+                   wmClass.includes('python') || wmInstance.includes('python');
         };
 
         // Hide from Alt-Tab window switcher
